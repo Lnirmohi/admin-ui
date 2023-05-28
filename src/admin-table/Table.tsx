@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useReducer, useState } from "react";
-import { TableProps } from "./table.types";
+import React, { FC, useCallback, useEffect, useReducer, useState } from "react";
+import { PageChangeHandler, TableColumn, TableProps } from "./table.types";
 import "./Table.css";
 import TableRow from "./tableRow";
 import TablePagination from "./TablePagination";
@@ -64,15 +64,11 @@ export type TableTogleAllSelectedAction = {
 }
 
 const Table = ({
-  rows,
-  columns,
-  pageSize,
+  config,
   getRowId,
-  rowUpdate,
-  rowDelete,
   onPageChange,
   onDeleteSelected,
-}: TableProps) => {
+}) => {
   const [tableRows, setTableRows] = useState<any[]>([]);
   const [allSelected, setAllSelected] = useState<boolean>();
   const [activePage, setActivePage] = useState<number>(1);
