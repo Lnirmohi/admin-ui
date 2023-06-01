@@ -63,18 +63,25 @@ export type TableTogleAllSelectedAction = {
   payload: boolean;
 }
 
-const Table = ({
+const Table = <T extends {selected: boolean; id: string;}>({
   config,
   getRowId,
   onPageChange,
   onDeleteSelected,
-}) => {
-  const [tableRows, setTableRows] = useState<any[]>([]);
+}: TableProps<T>) => {
+
   const [allSelected, setAllSelected] = useState<boolean>();
   const [activePage, setActivePage] = useState<number>(1);
   const [pageCount, setPageCount] = useState<number>(1);
-  const [tableRows1, tableRowDispatch] = useReducer(tableRowReducer, []);
+  const [tableRows, tableRowDispatch] = useReducer(tableRowReducer, []);
 
+  const {
+    rows,
+    columns,
+    pageSize,
+    rowUpdate,
+    rowDelete,
+  } = config;
 
   useEffect(() => {
     setPageCount(Math.ceil(rows.length / pageSize));
@@ -88,36 +95,8 @@ const Table = ({
       payload: rows
     });
 
-    // add selected boolean to track row selection
-    setTableRows(
-      rows.map((row) => {
-        return {
-          ...row,
-          selected: false,
-        };
-      })
-    );
   }, [rows]);
 
-  const handleRowSelectionToggle = useCallback(
-    (selected: boolean, rowid: string) => {
-      const rowIndexToSelect = tableRows.findIndex(
-        (tableRow) => tableRow.id === rowid
-      );
-
-      setTableRows((prev) => {
-        const tableRowsWithChangedRow = [...prev];
-
-        tableRowsWithChangedRow.splice(rowIndexToSelect, 1, {
-          ...rows[rowIndexToSelect],
-          selected,
-        });
-
-        return tableRowsWithChangedRow;
-      });
-    },
-    []
-  );
 
   useEffect(() => {
     if(allSelected === undefined) return;
@@ -129,7 +108,7 @@ const Table = ({
   }, [allSelected]);
 
   const handleDeleteSelected = () => {
-    const selectedRows = tableRows1.filter(row => {
+    const selectedRows = tableRows.filter(row => {
       return row.selected === true;
     })
     .map(item => item.id);
@@ -164,7 +143,7 @@ const Table = ({
           </tr>
         </thead>
         <tbody>
-          {tableRows1
+          {tableRows
             .slice((activePage - 1) * pageSize, activePage * pageSize)
             .map((row) => (
               <TableRow

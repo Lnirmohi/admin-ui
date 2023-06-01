@@ -53,7 +53,7 @@ const Dashboard = () => {
 	};
 
 	const tableConfig = useTable<TUserData>({
-		rows: userData,
+		rows: userData ?? [],
 		columns: userDataColumnDefination,
 		pageSize: 10,
 		rowUpdate: handleRowUpdate,
@@ -64,7 +64,7 @@ const Dashboard = () => {
 		<>
 		{userData && userData.length > 0 &&
 			<Table
-				{...tableConfig}
+				config={tableConfig}
 				getRowId={(row) => row?.id}
 				onPageChange={(newPage) => {/*  */}}
 				onDeleteSelected={(rowIdsToDelete) => {
