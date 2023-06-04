@@ -42,20 +42,12 @@ const userDataReducer = (state: TUserData[], action: UserDataReducerActionType) 
       const userIdsToDelete = action.payload;
       
       userIdsToDelete.forEach(id => {
-        const indexOfUserToDelete = state.findIndex(data => data.id === id);
+        const indexOfUserToDelete = stateCopy.findIndex(data => data.id === id);
 
         if(indexOfUserToDelete !== -1) {
           stateCopy.splice(indexOfUserToDelete, 1);
         }
       });
-
-      /* const indexOfUserToDelete = state.findIndex(data => data.id === action.payload.id);
-
-      if(indexOfUserToDelete !== -1) {
-        const stateCopy = state.slice();
-        state.splice(indexOfUserToDelete, 1);
-        state = stateCopy;
-      } */
 
       state = stateCopy;
 
