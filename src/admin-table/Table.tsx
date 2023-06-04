@@ -4,9 +4,33 @@ import "./Table.css";
 import TableRow from "./tableRow";
 import TablePagination from "./TablePagination";
 
-type TableActionTypes = TableRowSetAction | TableToggleSelectedSetAction | TableTogleAllSelectedAction;
+export enum TableRowActionType {
+  SET = 'SET',
+  TOGGLE_SELECTED = 'TOGGLE_SELECTED',
+  TOGGLE_ALL_SELECTED = 'TOGGLE_ALL_SELECTED'
+}
 
-const tableRowReducer = (state: any[], action: TableActionTypes) => {
+export type TableRowSetAction<T> = {
+  type: TableRowActionType.SET;
+  payload: T[];
+}
+
+export type TableToggleSelectedSetAction = {
+  type: TableRowActionType.TOGGLE_SELECTED;
+  payload: string;
+}
+
+export type TableTogleAllSelectedAction = {
+  type: TableRowActionType.TOGGLE_ALL_SELECTED,
+  payload: {
+    isAllSelected: boolean;
+    visibleRowIds: string[]
+  };
+}
+
+type TableActionTypes<T extends {selected: boolean; id: string;}> = TableRowSetAction<T> | TableToggleSelectedSetAction | TableTogleAllSelectedAction;
+
+const tableRowReducer = <T extends {selected: boolean; id: string;}, >(state: T[], action: TableActionTypes<T>) => {
 
   switch (action.type) {
 
@@ -34,7 +58,11 @@ const tableRowReducer = (state: any[], action: TableActionTypes) => {
       break;
     }
     case TableRowActionType.TOGGLE_ALL_SELECTED:
-      state = state.map(item => ({...item, selected: action.payload}));
+      state = [...state].map(item => (
+        action.payload.visibleRowIds.includes(item.id)
+        ? {...item, selected: action.payload.isAllSelected}
+        : item
+      ));
       break;
     default:
       return state;
@@ -42,26 +70,6 @@ const tableRowReducer = (state: any[], action: TableActionTypes) => {
 
   return state;
 };
-export enum TableRowActionType {
-  SET = 'SET',
-  TOGGLE_SELECTED = 'TOGGLE_SELECTED',
-  TOGGLE_ALL_SELECTED = 'TOGGLE_ALL_SELECTED'
-}
-
-export type TableRowSetAction = {
-  type: TableRowActionType.SET;
-  payload: any[];
-}
-
-export type TableToggleSelectedSetAction = {
-  type: TableRowActionType.TOGGLE_SELECTED;
-  payload: string;
-}
-
-export type TableTogleAllSelectedAction = {
-  type: TableRowActionType.TOGGLE_ALL_SELECTED,
-  payload: boolean;
-}
 
 const Table = <T extends {selected: boolean; id: string;}>({
   config,
@@ -73,7 +81,8 @@ const Table = <T extends {selected: boolean; id: string;}>({
   const [allSelected, setAllSelected] = useState<boolean>();
   const [activePage, setActivePage] = useState<number>(1);
   const [pageCount, setPageCount] = useState<number>(1);
-  const [tableRows, tableRowDispatch] = useReducer(tableRowReducer, []);
+  const [tableRows, tableRowDispatch] = useReducer<typeof tableRowReducer<T>>(tableRowReducer<T>, []);
+  // const [tableRowsToShow, setTableRowsToShow] = useState<T[]>();
 
   const {
     rows,
@@ -103,9 +112,15 @@ const Table = <T extends {selected: boolean; id: string;}>({
 
     tableRowDispatch({
       type: TableRowActionType.TOGGLE_ALL_SELECTED,
-      payload: allSelected
+      payload: {
+        isAllSelected: allSelected,
+        visibleRowIds: tableRows
+          .slice((activePage - 1) * pageSize, activePage * pageSize)
+          .map(item => item.id)
+      }
     });
   }, [allSelected]);
+  
 
   const handleDeleteSelected = () => {
     const selectedRows = tableRows.filter(row => {
@@ -114,6 +129,10 @@ const Table = <T extends {selected: boolean; id: string;}>({
     .map(item => item.id);
 
     onDeleteSelected(selectedRows);
+
+    if(allSelected) {
+      setAllSelected(false);
+    }
   };
 
   return (
@@ -143,7 +162,7 @@ const Table = <T extends {selected: boolean; id: string;}>({
           </tr>
         </thead>
         <tbody>
-          {tableRows
+          {tableRows && tableRows
             .slice((activePage - 1) * pageSize, activePage * pageSize)
             .map((row) => (
               <TableRow
@@ -167,10 +186,17 @@ const Table = <T extends {selected: boolean; id: string;}>({
             onPageChange(newPage);
             setAllSelected(false);
 
-            tableRowDispatch({
-              type: TableRowActionType.TOGGLE_ALL_SELECTED,
-              payload: false
-            });
+
+            if(allSelected) {
+
+              tableRowDispatch({
+                type: TableRowActionType.TOGGLE_ALL_SELECTED,
+                payload: {
+                  isAllSelected: false,
+                  visibleRowIds: []
+                }
+              });
+            }
           }}
         />
       </div>
