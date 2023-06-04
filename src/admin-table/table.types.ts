@@ -1,13 +1,10 @@
 import { Dispatch } from "react";
 import { TableRowSetAction, TableToggleSelectedSetAction } from "./Table";
+import { TableConfig } from "./table-utilities";
 
-export type TableProps = {
-	rows: any[],
-	columns: TableColumn[];
-	pageSize: number;
+export type TableProps<T> = {
+	config: TableConfig<T>,
 	getRowId: (row: any) => string;
-	rowUpdate: (oldRow: any, newRow: any) => void;
-	rowDelete: (rowId: string) => void; 
 	onPageChange: PageChangeHandler;
 	onDeleteSelected: (rowIdsToDelete: string[]) => void;
 };

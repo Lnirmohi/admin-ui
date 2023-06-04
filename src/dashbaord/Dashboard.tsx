@@ -5,7 +5,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import Table from '../admin-table/Table';
 import { UserDataDispatchContext, UsersDataContext } from '../context/userDataContext';
 import userDataColumnDefination from './userDataTableColumnDefination';
-import { UserDataActionTypes } from '../types/userTypes';
+import { TUserData, UserDataActionTypes } from '../types/userTypes';
+import { useTable } from '../admin-table/table-utilities';
 
 
 const Dashboard = () => {
@@ -51,16 +52,20 @@ const Dashboard = () => {
 		}
 	};
 
+	const tableConfig = useTable<TUserData>({
+		rows: userData ?? [],
+		columns: userDataColumnDefination,
+		pageSize: 10,
+		rowUpdate: handleRowUpdate,
+		rowDelete: hanldeRowDelete,
+	});
+
 	return (
 		<>
 		{userData && userData.length > 0 &&
 			<Table
-				rows={userData} 
-				columns={userDataColumnDefination}
-				pageSize={10}
+				config={tableConfig}
 				getRowId={(row) => row?.id}
-				rowUpdate={handleRowUpdate}
-				rowDelete={hanldeRowDelete}
 				onPageChange={(newPage) => {/*  */}}
 				onDeleteSelected={(rowIdsToDelete) => {
 

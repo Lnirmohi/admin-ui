@@ -1,12 +1,36 @@
-import React, { useCallback, useEffect, useReducer, useState } from "react";
-import { TableProps } from "./table.types";
+import React, { FC, useCallback, useEffect, useReducer, useState } from "react";
+import { PageChangeHandler, TableColumn, TableProps } from "./table.types";
 import "./Table.css";
 import TableRow from "./tableRow";
 import TablePagination from "./TablePagination";
 
-type TableActionTypes = TableRowSetAction | TableToggleSelectedSetAction | TableTogleAllSelectedAction;
+export enum TableRowActionType {
+  SET = 'SET',
+  TOGGLE_SELECTED = 'TOGGLE_SELECTED',
+  TOGGLE_ALL_SELECTED = 'TOGGLE_ALL_SELECTED'
+}
 
-const tableRowReducer = (state: any[], action: TableActionTypes) => {
+export type TableRowSetAction<T> = {
+  type: TableRowActionType.SET;
+  payload: T[];
+}
+
+export type TableToggleSelectedSetAction = {
+  type: TableRowActionType.TOGGLE_SELECTED;
+  payload: string;
+}
+
+export type TableTogleAllSelectedAction = {
+  type: TableRowActionType.TOGGLE_ALL_SELECTED,
+  payload: {
+    isAllSelected: boolean;
+    visibleRowIds: string[]
+  };
+}
+
+type TableActionTypes<T extends {selected: boolean; id: string;}> = TableRowSetAction<T> | TableToggleSelectedSetAction | TableTogleAllSelectedAction;
+
+const tableRowReducer = <T extends {selected: boolean; id: string;}, >(state: T[], action: TableActionTypes<T>) => {
 
   switch (action.type) {
 
@@ -34,7 +58,11 @@ const tableRowReducer = (state: any[], action: TableActionTypes) => {
       break;
     }
     case TableRowActionType.TOGGLE_ALL_SELECTED:
-      state = state.map(item => ({...item, selected: action.payload}));
+      state = [...state].map(item => (
+        action.payload.visibleRowIds.includes(item.id)
+        ? {...item, selected: action.payload.isAllSelected}
+        : item
+      ));
       break;
     default:
       return state;
@@ -42,43 +70,27 @@ const tableRowReducer = (state: any[], action: TableActionTypes) => {
 
   return state;
 };
-export enum TableRowActionType {
-  SET = 'SET',
-  TOGGLE_SELECTED = 'TOGGLE_SELECTED',
-  TOGGLE_ALL_SELECTED = 'TOGGLE_ALL_SELECTED'
-}
 
-export type TableRowSetAction = {
-  type: TableRowActionType.SET;
-  payload: any[];
-}
-
-export type TableToggleSelectedSetAction = {
-  type: TableRowActionType.TOGGLE_SELECTED;
-  payload: string;
-}
-
-export type TableTogleAllSelectedAction = {
-  type: TableRowActionType.TOGGLE_ALL_SELECTED,
-  payload: boolean;
-}
-
-const Table = ({
-  rows,
-  columns,
-  pageSize,
+const Table = <T extends {selected: boolean; id: string;}>({
+  config,
   getRowId,
-  rowUpdate,
-  rowDelete,
   onPageChange,
   onDeleteSelected,
-}: TableProps) => {
-  const [tableRows, setTableRows] = useState<any[]>([]);
+}: TableProps<T>) => {
+
   const [allSelected, setAllSelected] = useState<boolean>();
   const [activePage, setActivePage] = useState<number>(1);
   const [pageCount, setPageCount] = useState<number>(1);
-  const [tableRows1, tableRowDispatch] = useReducer(tableRowReducer, []);
+  const [tableRows, tableRowDispatch] = useReducer<typeof tableRowReducer<T>>(tableRowReducer<T>, []);
+  // const [tableRowsToShow, setTableRowsToShow] = useState<T[]>();
 
+  const {
+    rows,
+    columns,
+    pageSize,
+    rowUpdate,
+    rowDelete,
+  } = config;
 
   useEffect(() => {
     setPageCount(Math.ceil(rows.length / pageSize));
@@ -92,53 +104,35 @@ const Table = ({
       payload: rows
     });
 
-    // add selected boolean to track row selection
-    setTableRows(
-      rows.map((row) => {
-        return {
-          ...row,
-          selected: false,
-        };
-      })
-    );
   }, [rows]);
 
-  const handleRowSelectionToggle = useCallback(
-    (selected: boolean, rowid: string) => {
-      const rowIndexToSelect = tableRows.findIndex(
-        (tableRow) => tableRow.id === rowid
-      );
-
-      setTableRows((prev) => {
-        const tableRowsWithChangedRow = [...prev];
-
-        tableRowsWithChangedRow.splice(rowIndexToSelect, 1, {
-          ...rows[rowIndexToSelect],
-          selected,
-        });
-
-        return tableRowsWithChangedRow;
-      });
-    },
-    []
-  );
 
   useEffect(() => {
     if(allSelected === undefined) return;
 
     tableRowDispatch({
       type: TableRowActionType.TOGGLE_ALL_SELECTED,
-      payload: allSelected
+      payload: {
+        isAllSelected: allSelected,
+        visibleRowIds: tableRows
+          .slice((activePage - 1) * pageSize, activePage * pageSize)
+          .map(item => item.id)
+      }
     });
   }, [allSelected]);
+  
 
   const handleDeleteSelected = () => {
-    const selectedRows = tableRows1.filter(row => {
+    const selectedRows = tableRows.filter(row => {
       return row.selected === true;
     })
     .map(item => item.id);
 
     onDeleteSelected(selectedRows);
+
+    if(allSelected) {
+      setAllSelected(false);
+    }
   };
 
   return (
@@ -168,7 +162,7 @@ const Table = ({
           </tr>
         </thead>
         <tbody>
-          {tableRows1
+          {tableRows && tableRows
             .slice((activePage - 1) * pageSize, activePage * pageSize)
             .map((row) => (
               <TableRow
@@ -192,10 +186,17 @@ const Table = ({
             onPageChange(newPage);
             setAllSelected(false);
 
-            tableRowDispatch({
-              type: TableRowActionType.TOGGLE_ALL_SELECTED,
-              payload: false
-            });
+
+            if(allSelected) {
+
+              tableRowDispatch({
+                type: TableRowActionType.TOGGLE_ALL_SELECTED,
+                payload: {
+                  isAllSelected: false,
+                  visibleRowIds: []
+                }
+              });
+            }
           }}
         />
       </div>
