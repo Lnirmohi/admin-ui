@@ -186,17 +186,15 @@ const Table = <T extends {selected: boolean; id: string;}>({
             onPageChange(newPage);
             setAllSelected(false);
 
-
-            if(allSelected) {
-
-              tableRowDispatch({
-                type: TableRowActionType.TOGGLE_ALL_SELECTED,
-                payload: {
-                  isAllSelected: false,
-                  visibleRowIds: []
-                }
-              });
-            }
+            tableRowDispatch({
+              type: TableRowActionType.TOGGLE_ALL_SELECTED,
+              payload: {
+                isAllSelected: false,
+                visibleRowIds: tableRows && tableRows
+                  .slice((activePage - 1) * pageSize, activePage * pageSize)
+                  .map(item => item.id)
+              }
+            });
           }}
         />
       </div>
