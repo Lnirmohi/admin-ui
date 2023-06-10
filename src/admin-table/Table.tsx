@@ -132,6 +132,11 @@ const Table = <T extends {selected: boolean; id: string;}>({
 
     if(allSelected) {
       setAllSelected(false);
+
+      // handle delete all from last page
+      if(activePage === pageCount) {
+        setActivePage(activePage -1);
+      }
     }
   };
 
