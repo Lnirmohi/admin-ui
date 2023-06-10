@@ -19,6 +19,11 @@ const TablePagination = ({pageCount, handlePageChange}: TablePaginationPropsType
 		}
 
 		setPageArr(pages);
+		setCurrentPage(prev => (
+			prev === pageCount + 1 
+			? pageCount
+			: prev
+		));
 	}, [pageCount]);
 
 	useEffect(() => {
@@ -74,7 +79,7 @@ const TablePagination = ({pageCount, handlePageChange}: TablePaginationPropsType
 
 			<MorePageSpan pageSelected={currentPage} totalPages={pageCount} position="rear" />
 
-			<button 
+			{pageCount !== 1 && <button 
 				className={currentPage === pageCount ? 'current-page-bg' : ''}
 				onClick={() => {
 					handlePageChange(pageCount);
@@ -82,7 +87,7 @@ const TablePagination = ({pageCount, handlePageChange}: TablePaginationPropsType
 				}}
 			>
 				{pageCount}
-			</button>
+			</button>}
 
 			<div>
 				<button disabled={currentPage === pageCount}
@@ -133,8 +138,7 @@ function getPagesToShow(currentPage: number, pageArr: number[]) {
 
 	if((firstItem + currentPage) <= 5) {
 		pagesToShow.push(
-			...[...pageArr].slice(0, 5), 
-			lastItem
+			...[...pageArr].slice(0, 5)
 		);
 	} else if(pageArr.length && (pageArr[pageArr.length - 1] - currentPage) < 4) {
 		pagesToShow.push(
