@@ -19,8 +19,8 @@ const TableRow = ({rowData, columnData, update, rowDelete, tableRowDispatch}: Ta
 	};
 
 	return (
-		<tr className={rowData.selected ? 'highlighted-row' : undefined}>
-			<td className="flex flex-row justify-center">
+		<div className={`flex flex-row space-y-2 hover:bg-gray-200 ${rowData.selected ? 'highlighted-row' : undefined}`}>
+			<div className="flex flex-row justify-center pl-8 py-3">
 				<input 
 					type='checkbox'
 					checked={rowData.selected ?? false}
@@ -31,10 +31,10 @@ const TableRow = ({rowData, columnData, update, rowDelete, tableRowDispatch}: Ta
 						});
 					}}
 				/>
-			</td>
+			</div>
 
 			{columnData.map(column => 
-				<td key={column['field']}
+				<div key={column['field']}
 					className="text-center"
 					style={{ width: `${column["width"]}%` }}
 				>
@@ -44,14 +44,14 @@ const TableRow = ({rowData, columnData, update, rowDelete, tableRowDispatch}: Ta
 								value={rowValue[column['field']]} 
 								name={column['field']} 
 								onChange={handleRowValueChange}
-								className="w-full"
+								className="border py-2 px-3 text-grey-darkest text-center"
 							/> 
-						: <div className="w-full">{rowData[column['field']]}</div>
+						: <div className="w-full align-middle py-2">{rowData[column['field']]}</div>
 					}
-				</td>
+				</div>
 			)}
 
-			<td className='table--body__actions'>
+			<div className='flex flew-row gap-3'>
 				{editMode
 					? <button 
 							onClick={() => {
@@ -75,6 +75,7 @@ const TableRow = ({rowData, columnData, update, rowDelete, tableRowDispatch}: Ta
 								setEditMode(true);
 								setOldData(rowValue);
 							}}
+							className="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
 						>
 							Edit
 						</button>
@@ -96,12 +97,13 @@ const TableRow = ({rowData, columnData, update, rowDelete, tableRowDispatch}: Ta
 									console.error(error);
 								}
 							}}
+							className="bg-transparent hover:bg-red-400 text-red-500 font-semibold hover:text-white py-2 px-4 border border-red-500 hover:border-transparent rounded"
 						>
 							Delete
 						</button>
 					}
-			</td>
-		</tr>
+			</div>
+		</div>
 	);
 };
 

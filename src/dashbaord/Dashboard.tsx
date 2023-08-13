@@ -7,6 +7,7 @@ import { UserDataDispatchContext, UsersDataContext } from '../context/userDataCo
 import userDataColumnDefination from './userDataTableColumnDefination';
 import { TUserData, UserDataActionTypes } from '../types/userTypes';
 import { useTable } from '../admin-table/table-utilities';
+import TableV2 from '../admin-table/TableV2.tsx';
 
 
 const Dashboard = () => {
@@ -63,7 +64,7 @@ const Dashboard = () => {
 	return (
 		<>
 		{userData && userData.length > 0 &&
-			<Table
+			<TableV2
 				config={tableConfig}
 				getRowId={(row) => row?.id}
 				onPageChange={(newPage) => {/*  */}}
