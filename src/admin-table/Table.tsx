@@ -140,12 +140,16 @@ const Table = <T extends {selected: boolean; id: string;}>({
     }
   };
 
+  if(tableRows.length === 0) {
+    return <p>No data provided</p>;
+  }
+
   return (
-    <div className="table-container">
+    <div className="min-w-full">
       <table>
         <thead>
           <tr>
-            <th className="table--header__select-all">
+            <th className="px-2 py-3">
               <input
                 type="checkbox"
                 checked={allSelected ?? false}
@@ -156,14 +160,14 @@ const Table = <T extends {selected: boolean; id: string;}>({
             </th>
             {columns.map((column) => (
               <th
-                className="table--header__column"
+                className=""
                 style={{ width: `${column["width"]}%` }}
                 key={column.field}
               >
                 {column.header}
               </th>
             ))}
-            <th className="table--header__actions">Actions</th>
+            <th className="">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -182,7 +186,7 @@ const Table = <T extends {selected: boolean; id: string;}>({
         </tbody>
       </table>
 
-      <div className="table--footer">
+      <div className="">
         <button onClick={handleDeleteSelected}>Delete Selected</button>
         <TablePagination
           pageCount={pageCount}

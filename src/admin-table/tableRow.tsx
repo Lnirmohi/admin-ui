@@ -20,7 +20,7 @@ const TableRow = ({rowData, columnData, update, rowDelete, tableRowDispatch}: Ta
 
 	return (
 		<tr className={rowData.selected ? 'highlighted-row' : undefined}>
-			<td>
+			<td className="flex flex-row justify-center">
 				<input 
 					type='checkbox'
 					checked={rowData.selected ?? false}
@@ -34,15 +34,19 @@ const TableRow = ({rowData, columnData, update, rowDelete, tableRowDispatch}: Ta
 			</td>
 
 			{columnData.map(column => 
-				<td key={column['field']}>
+				<td key={column['field']}
+					className="text-center"
+					style={{ width: `${column["width"]}%` }}
+				>
 					{editMode
 						? <input 
 								type="text" 
 								value={rowValue[column['field']]} 
 								name={column['field']} 
-								onChange={handleRowValueChange} 
+								onChange={handleRowValueChange}
+								className="w-full"
 							/> 
-						: rowData[column['field']]
+						: <div className="w-full">{rowData[column['field']]}</div>
 					}
 				</td>
 			)}
