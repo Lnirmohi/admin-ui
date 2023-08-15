@@ -15,6 +15,9 @@ const userDataColumnDefination: TableColumn[] = [
 		header: 'Role',
 		field: 'role',
 		width: 15,
+		transform(value) {
+			return value[0].toUpperCase() + value.slice(1);
+		},
 	},
 	
 ];

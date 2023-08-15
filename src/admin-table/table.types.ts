@@ -13,14 +13,15 @@ export type TableColumn = {
 	header: string;
 	field: string;
 	width: number;
+	transform?: (value: string) => string
 }
 
-export type TableRowProps = {
+export type TableRowProps<T> = {
 	rowData: any;
 	columnData: TableColumn[];
 	update: (oldRow: any, newRow: any) => any;
 	rowDelete: (id: string) => void;
-	tableRowDispatch: Dispatch<TableRowSetAction | TableToggleSelectedSetAction>
+	tableRowDispatch: Dispatch<TableRowSetAction<T> | TableToggleSelectedSetAction>
 };
 
 export type TablePaginationPropsType = {

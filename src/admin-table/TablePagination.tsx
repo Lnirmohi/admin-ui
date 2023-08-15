@@ -1,7 +1,25 @@
-import { useEffect, useState } from "react";
+import { DetailedHTMLProps, HTMLProps, ReactNode, useEffect, useState } from "react";
 import { TablePaginationPropsType } from "./table.types";
 
-import './TablePagination.css';
+interface PageNumberProps extends DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> {
+	children: ReactNode;
+}
+
+const PageNumberButton = ({children, className, ...props}: PageNumberProps) => {
+	return (
+		<button 
+			className={`
+				self-start text-blue-500 border-transparent border-2 hover:rounded
+				font-semibold text-xl py-1 px-2 bg-transparent hover:bg-blue-500 hover:text-white
+				${className}
+			`}
+			{...props}
+		>
+			{children}
+		</button>
+	);
+};
+
 
 const TablePagination = ({pageCount, handlePageChange}: TablePaginationPropsType) => {
 
@@ -32,22 +50,22 @@ const TablePagination = ({pageCount, handlePageChange}: TablePaginationPropsType
 	}, [currentPage, pageArr]);
   
 	return (
-		<div className="pagination-container">
+		<div className="pagination-container flex flex-row self-center gap-11">
 			<div>
-				<button disabled={currentPage === 1}>
+				<PageNumberButton disabled={currentPage === 1}>
 					&lt;&lt;
-				</button>
-				<button disabled={currentPage === 1}
+				</PageNumberButton>
+				<PageNumberButton disabled={currentPage === 1}
 					onClick={() => {
 						handlePageChange(currentPage - 1);
 						setCurrentPage(currentPage - 1);
 					}}
 				>
 					&lt;
-				</button>
+				</PageNumberButton>
 			</div>
 
-			<button
+			<PageNumberButton
 				className={currentPage === 1 ? 'current-page-bg' : ''}
 				onClick={() => {
 					handlePageChange(1);
@@ -55,7 +73,7 @@ const TablePagination = ({pageCount, handlePageChange}: TablePaginationPropsType
 				}}
 			>
 				1
-			</button>
+			</PageNumberButton>
 
 			<MorePageSpan pageSelected={currentPage} totalPages={pageCount} position="front"/>
 			
@@ -63,7 +81,7 @@ const TablePagination = ({pageCount, handlePageChange}: TablePaginationPropsType
 			{pagesToShow && pagesToShow
 				.filter(page => page !== 1 && page !== pageCount)
 				.map((page, index) => (
-					<button 
+					<PageNumberButton 
 						key={page} 
 						className={page === currentPage ? 'current-page-bg' : ''}
 						onClick={() => {
@@ -72,33 +90,37 @@ const TablePagination = ({pageCount, handlePageChange}: TablePaginationPropsType
 						}}
 					>
 						{page}
-					</button>
+					</PageNumberButton>
 				))
 			}
 			</div>
 
 			<MorePageSpan pageSelected={currentPage} totalPages={pageCount} position="rear" />
 
-			{pageCount !== 1 && <button 
-				className={currentPage === pageCount ? 'current-page-bg' : ''}
-				onClick={() => {
-					handlePageChange(pageCount);
-					setCurrentPage(pageCount);
-				}}
-			>
-				{pageCount}
-			</button>}
+			{pageCount !== 1 && ( 
+				<div className="flex flex-row gap-3">
+					<PageNumberButton 
+						className={currentPage === pageCount ? 'current-page-bg' : ''}
+						onClick={() => {
+							handlePageChange(pageCount);
+							setCurrentPage(pageCount);
+						}}
+					>
+						{pageCount}
+					</PageNumberButton>
+				</div>
+			)}
 
 			<div>
-				<button disabled={currentPage === pageCount}
+				<PageNumberButton disabled={currentPage === pageCount}
 					onClick={() => {
 						handlePageChange(currentPage + 1);
 						setCurrentPage(currentPage + 1);
 					}}
 				>
 					&gt;
-				</button>
-				<button disabled={currentPage === pageCount}>&gt;&gt;</button>
+				</PageNumberButton>
+				<PageNumberButton disabled={currentPage === pageCount}>&gt;&gt;</PageNumberButton>
 			</div>
 		</div>
 	);

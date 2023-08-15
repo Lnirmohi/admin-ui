@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { TableColumn, TableRowProps } from "./table.types";
 import { TableRowActionType } from "./Table";
 
-const TableRow = ({rowData, columnData, update, rowDelete, tableRowDispatch}: TableRowProps) => {
+function TableRow<T>({rowData, columnData, update, rowDelete, tableRowDispatch}: TableRowProps<T>) {
 
 	const [editMode, setEditMode] = useState<boolean>(false);
 	const [rowValue, setRowValue] = useState(rowData);
@@ -19,7 +19,7 @@ const TableRow = ({rowData, columnData, update, rowDelete, tableRowDispatch}: Ta
 	};
 
 	return (
-		<div className={`flex flex-row space-y-2 hover:bg-gray-200 ${rowData.selected ? 'highlighted-row' : undefined}`}>
+		<div className={`flex flex-row py-2 hover:shadow-inner hover:bg-gray-200 ${rowData.selected ? 'highlighted-row' : undefined}`}>
 			<div className="flex flex-row justify-center pl-8 py-3">
 				<input 
 					type='checkbox'
@@ -33,25 +33,33 @@ const TableRow = ({rowData, columnData, update, rowDelete, tableRowDispatch}: Ta
 				/>
 			</div>
 
-			{columnData.map(column => 
-				<div key={column['field']}
-					className="text-center"
-					style={{ width: `${column["width"]}%` }}
-				>
-					{editMode
-						? <input 
-								type="text" 
-								value={rowValue[column['field']]} 
-								name={column['field']} 
-								onChange={handleRowValueChange}
-								className="border py-2 px-3 text-grey-darkest text-center"
-							/> 
-						: <div className="w-full align-middle py-2">{rowData[column['field']]}</div>
-					}
-				</div>
+			{columnData.map(column => {
+
+				const value = column.transform 
+					? column.transform(rowData[column['field']])
+					: rowData[column['field']];
+
+				return (
+					<div key={column['field']}
+						className="text-center ml-2"
+						style={{ width: `${column["width"]}%` }}
+					>
+						{editMode
+							? <input 
+									type="text" 
+									value={value} 
+									name={column['field']} 
+									onChange={handleRowValueChange}
+									className="border py-2 px-3 text-grey-darkest text-center w-full"
+								/> 
+							: <div className="w-full align-middle py-2">{value}</div>
+						}
+					</div>
+				);
+			}
 			)}
 
-			<div className='flex flew-row gap-3'>
+			<div className='flex flew-row gap-3 justify-center ml-4'>
 				{editMode
 					? <button 
 							onClick={() => {
@@ -66,7 +74,9 @@ const TableRow = ({rowData, columnData, update, rowDelete, tableRowDispatch}: Ta
 								}
 
 								setEditMode(false);
+								
 							}}
+							className="bg-transparent hover:bg-green-300 text-green-500 font-semibold hover:text-white py-2 px-4 border border-green-500 hover:border-transparent rounded"
 						>
 							Save
 						</button>
@@ -86,6 +96,7 @@ const TableRow = ({rowData, columnData, update, rowDelete, tableRowDispatch}: Ta
 								setEditMode(false);
 								setRowValue(oldData);
 							}}
+							className="bg-transparent hover:bg-slate-300 text-slate-500 font-semibold hover:text-white py-2 px-4 border border-slate-500 hover:border-transparent rounded"
 						>
 							Cancel
 						</button>
@@ -105,6 +116,6 @@ const TableRow = ({rowData, columnData, update, rowDelete, tableRowDispatch}: Ta
 			</div>
 		</div>
 	);
-};
+}
 
 export default TableRow;

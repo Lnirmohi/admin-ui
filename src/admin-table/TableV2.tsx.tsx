@@ -123,10 +123,10 @@ const Table = <T extends {selected: boolean; id: string;}>({
   
 
   const handleDeleteSelected = () => {
-    const selectedRows = tableRows.filter(row => {
-      return row.selected === true;
-    })
-    .map(item => item.id);
+    
+    const selectedRows = tableRows
+      .filter(row =>  row.selected === true)
+      .map(item => item.id);
 
     onDeleteSelected(selectedRows);
 
@@ -145,8 +145,8 @@ const Table = <T extends {selected: boolean; id: string;}>({
   }
 
   return (
-    <div className="min-w-full font-poppins">
-      <div className="bg-slate-300 px-4 py-6">
+    <div className="bg-slate-300 min-w-full font-poppins py-6">
+      <div className="px-4">
         <div id="table-head" className="bg-[#F7F8FA] rounded-t-lg shadow-lg">
           <div className="flex flex-row">
             <div className="pl-8 py-3">
@@ -160,7 +160,7 @@ const Table = <T extends {selected: boolean; id: string;}>({
             </div>
             {columns.map((column) => (
               <div
-                className="px-2 py-3 text-center"
+                className="px-2 py-3 text-center ml-2"
                 style={{ width: `${column["width"]}%` }}
                 key={column.field}
               >
@@ -171,7 +171,7 @@ const Table = <T extends {selected: boolean; id: string;}>({
           </div>
         </div>
 
-        <div id="table-body" className="bg-white rounded-b-lg">
+        <div id="table-body" className="bg-white space-y-2 h-[650px]">
           {tableRows && tableRows
             .slice((activePage - 1) * pageSize, activePage * pageSize)
             .map((row) => (
@@ -186,27 +186,36 @@ const Table = <T extends {selected: boolean; id: string;}>({
             ))}
         </div>
       </div>
+      
+      <div className="px-4">
+        <div className="bg-white flex flex-col gap-3 px-4 pt-4 rounded-b-lg">
+          <button 
+            onClick={handleDeleteSelected}
+            className="
+              self-start bg-transparent hover:bg-pink-500 text-pink-600 font-semibold 
+              hover:text-white py-2 px-4 border border-pink-400 hover:border-transparent rounded"
+          >
+            Delete Selected
+          </button>
+          <TablePagination
+            pageCount={pageCount}
+            handlePageChange={(newPage: number) => {
+              setActivePage(newPage);
+              onPageChange(newPage);
+              setAllSelected(false);
 
-      <div className="">
-        <button onClick={handleDeleteSelected}>Delete Selected</button>
-        <TablePagination
-          pageCount={pageCount}
-          handlePageChange={(newPage: number) => {
-            setActivePage(newPage);
-            onPageChange(newPage);
-            setAllSelected(false);
-
-            tableRowDispatch({
-              type: TableRowActionType.TOGGLE_ALL_SELECTED,
-              payload: {
-                isAllSelected: false,
-                visibleRowIds: tableRows && tableRows
-                  .slice((activePage - 1) * pageSize, activePage * pageSize)
-                  .map(item => item.id)
-              }
-            });
-          }}
-        />
+              tableRowDispatch({
+                type: TableRowActionType.TOGGLE_ALL_SELECTED,
+                payload: {
+                  isAllSelected: false,
+                  visibleRowIds: tableRows && tableRows
+                    .slice((activePage - 1) * pageSize, activePage * pageSize)
+                    .map(item => item.id)
+                }
+              });
+            }}
+          />
+        </div>
       </div>
     </div>
   );
