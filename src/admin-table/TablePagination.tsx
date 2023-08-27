@@ -11,6 +11,7 @@ const PageNumberButton = ({children, className, ...props}: PageNumberProps) => {
 			className={`
 				self-start text-blue-500 border-transparent border-2 hover:rounded
 				font-semibold text-xl py-1 px-2 bg-transparent hover:bg-blue-500 hover:text-white
+				hover:cursor-pointer
 				${className}
 			`}
 			{...props}

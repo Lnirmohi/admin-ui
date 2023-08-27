@@ -1,8 +1,8 @@
-import React, {useContext, useEffect} from 'react';
+import {useContext} from 'react';
 import { isEqual } from 'lodash';
 import { ToastContainer, toast } from 'react-toastify';
 
-import Table from '../admin-table/Table';
+/* import Table from '../admin-table/Table'; */
 import { UserDataDispatchContext, UsersDataContext } from '../context/userDataContext';
 import userDataColumnDefination from './userDataTableColumnDefination';
 import { TUserData, UserDataActionTypes } from '../types/userTypes';
@@ -20,9 +20,23 @@ const Dashboard = () => {
 		if(isEqual(oldRow, newRow)) return oldRow;
 		if(userDataDispatch === undefined) return oldRow;
 
+		const userDataRow = userData?.find(item => item.id === newRow.id);
+		const updateduserData = {...newRow};
+
+		if(userDataRow === undefined) return oldRow;
+
+		const keys = Object.keys(userDataRow);
+		
+		for(const key of Object.keys(updateduserData)) {	
+
+			if(!(keys.includes(key) )) {
+				delete updateduserData[key];
+			}
+		}
+
 		userDataDispatch({
 			type: UserDataActionTypes.UPDATE,
-			payload: newRow
+			payload: updateduserData as TUserData
 		});
 
 		return newRow;
@@ -53,7 +67,7 @@ const Dashboard = () => {
 		}
 	};
 
-	const tableConfig = useTable<TUserData>({
+	const tableConfig = useTable({
 		rows: userData ?? [],
 		columns: userDataColumnDefination,
 		pageSize: 10,

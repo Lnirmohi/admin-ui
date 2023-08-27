@@ -1,8 +1,9 @@
 import React, { FC, useCallback, useEffect, useReducer, useState } from "react";
-import { PageChangeHandler, TableColumn, TableProps } from "./table.types";
+import { PageChangeHandler, RowType, TableColumn, TableProps } from "./table.types";
 import "./Table.css";
 import TableRow from "./tableRow";
 import TablePagination from "./TablePagination";
+import SearchTable from "./SearchTable";
 
 export enum TableRowActionType {
   SET = 'SET',
@@ -10,9 +11,9 @@ export enum TableRowActionType {
   TOGGLE_ALL_SELECTED = 'TOGGLE_ALL_SELECTED'
 }
 
-export type TableRowSetAction<T> = {
+export type TableRowSetAction = {
   type: TableRowActionType.SET;
-  payload: T[];
+  payload: RowType[];
 }
 
 export type TableToggleSelectedSetAction = {
@@ -26,11 +27,15 @@ export type TableTogleAllSelectedAction = {
     isAllSelected: boolean;
     visibleRowIds: string[]
   };
-}
+};
 
-type TableActionTypes<T extends {selected: boolean; id: string;}> = TableRowSetAction<T> | TableToggleSelectedSetAction | TableTogleAllSelectedAction;
+type TableActionTypes = TableRowSetAction | TableToggleSelectedSetAction | TableTogleAllSelectedAction;
 
-const tableRowReducer = <T extends {selected: boolean; id: string;}, >(state: T[], action: TableActionTypes<T>) => {
+type TableStateType = (RowType & {selected: boolean;})[];
+
+const initialstate: TableStateType = [];
+
+const tableRowReducer = (state = initialstate, action: TableActionTypes) => {
 
   switch (action.type) {
 
@@ -71,17 +76,17 @@ const tableRowReducer = <T extends {selected: boolean; id: string;}, >(state: T[
   return state;
 };
 
-const Table = <T extends {selected: boolean; id: string;}>({
+const Table = ({
   config,
   getRowId,
   onPageChange,
   onDeleteSelected,
-}: TableProps<T>) => {
+}: TableProps) => {
 
   const [allSelected, setAllSelected] = useState<boolean>();
   const [activePage, setActivePage] = useState<number>(1);
   const [pageCount, setPageCount] = useState<number>(1);
-  const [tableRows, tableRowDispatch] = useReducer<typeof tableRowReducer<T>>(tableRowReducer<T>, []);
+  const [tableRows, tableRowDispatch] = useReducer<typeof tableRowReducer>(tableRowReducer, []);
   // const [tableRowsToShow, setTableRowsToShow] = useState<T[]>();
 
   const {
@@ -93,8 +98,8 @@ const Table = <T extends {selected: boolean; id: string;}>({
   } = config;
 
   useEffect(() => {
-    setPageCount(Math.ceil(rows.length / pageSize));
-  }, [pageSize, rows.length]);
+    setPageCount(Math.ceil(tableRows.length / pageSize));
+  }, [pageSize, tableRows.length]);
 
   useEffect(() => {
     if (rows.length === 0) return;
@@ -140,13 +145,51 @@ const Table = <T extends {selected: boolean; id: string;}>({
     }
   };
 
-  if(tableRows.length === 0) {
-    return <p>No data provided</p>;
-  }
-
   return (
     <div className="bg-slate-300 min-w-full font-poppins py-6">
       <div className="px-4">
+        <SearchTable 
+          fields={Object.keys(rows[0]).filter(item => item !== 'id')} 
+          callback={(searchTerm) => {
+
+            if(searchTerm.length === 0) {
+              tableRowDispatch({
+                type: TableRowActionType.SET,
+                payload: rows
+              });
+            }
+            
+            const convertedSearchTerm = searchTerm.toLowerCase();
+            
+            const filteredRows = rows.filter(item => {
+              
+              
+              let matchFound = false;
+              
+              for(const [key, value] of Object.entries(item)) {
+                
+                const convertedValue = `${value}`.toLowerCase();
+
+                if(typeof value === 'string') {
+                  if(convertedValue.includes(convertedSearchTerm)) {
+                    matchFound = true;
+                  }
+                } else if(typeof value === 'number') {
+                  if(convertedValue.includes(convertedSearchTerm)) {
+                    matchFound = true;
+                  }
+                }
+              }
+
+              return matchFound;
+            });
+
+            tableRowDispatch({
+              type: TableRowActionType.SET,
+              payload: filteredRows
+            });
+          }}
+        />
         <div id="table-head" className="bg-[#F7F8FA] rounded-t-lg shadow-lg">
           <div className="flex flex-row">
             <div className="pl-8 py-3">
@@ -154,7 +197,7 @@ const Table = <T extends {selected: boolean; id: string;}>({
                 type="checkbox"
                 checked={allSelected ?? false}
                 onChange={() => {
-                  setAllSelected(!allSelected);
+                  setAllSelected(prev => !prev);
                 }}
               />
             </div>
@@ -172,51 +215,66 @@ const Table = <T extends {selected: boolean; id: string;}>({
         </div>
 
         <div id="table-body" className="bg-white space-y-2 h-[650px]">
-          {tableRows && tableRows
-            .slice((activePage - 1) * pageSize, activePage * pageSize)
-            .map((row) => (
-              <TableRow
-                update={rowUpdate}
-                rowDelete={rowDelete}
-                rowData={row}
-                columnData={columns}
-                key={getRowId(row)}
-                tableRowDispatch={tableRowDispatch}
-              />
-            ))}
+          <>
+          {tableRows.length === 0 ? (
+            <div className="h-full flex flex-col justify-center">
+              <p className="text-center text-3xl text-slate-400">
+                No data found
+              </p>
+            </div>
+            ) : (
+              <>
+                {tableRows && tableRows
+                  .slice((activePage - 1) * pageSize, activePage * pageSize)
+                  .map((row) => (
+                    <TableRow
+                      update={rowUpdate}
+                      rowDelete={rowDelete}
+                      rowData={row}
+                      columnData={columns}
+                      key={getRowId(row)}
+                      tableRowDispatch={tableRowDispatch}
+                    />
+                  ))}
+              </>
+            )
+          }
+          </>
         </div>
       </div>
       
-      <div className="px-4">
-        <div className="bg-white flex flex-col gap-3 px-4 pt-4 rounded-b-lg">
-          <button 
-            onClick={handleDeleteSelected}
-            className="
-              self-start bg-transparent hover:bg-pink-500 text-pink-600 font-semibold 
-              hover:text-white py-2 px-4 border border-pink-400 hover:border-transparent rounded"
-          >
-            Delete Selected
-          </button>
-          <TablePagination
-            pageCount={pageCount}
-            handlePageChange={(newPage: number) => {
-              setActivePage(newPage);
-              onPageChange(newPage);
-              setAllSelected(false);
+      {pageCount > 0 &&
+        <div className="px-4">
+          <div className="bg-white flex flex-col gap-3 px-4 pt-4 rounded-b-lg">
+            <button 
+              onClick={handleDeleteSelected}
+              className="
+                self-start bg-transparent hover:bg-pink-500 text-pink-600 font-semibold 
+                hover:text-white py-2 px-4 border border-pink-400 hover:border-transparent rounded"
+            >
+              Delete Selected
+            </button>
+            <TablePagination
+              pageCount={pageCount}
+              handlePageChange={(newPage: number) => {
+                setActivePage(newPage);
+                onPageChange(newPage);
+                setAllSelected(false);
 
-              tableRowDispatch({
-                type: TableRowActionType.TOGGLE_ALL_SELECTED,
-                payload: {
-                  isAllSelected: false,
-                  visibleRowIds: tableRows && tableRows
-                    .slice((activePage - 1) * pageSize, activePage * pageSize)
-                    .map(item => item.id)
-                }
-              });
-            }}
-          />
+                tableRowDispatch({
+                  type: TableRowActionType.TOGGLE_ALL_SELECTED,
+                  payload: {
+                    isAllSelected: false,
+                    visibleRowIds: tableRows && tableRows
+                      .slice((activePage - 1) * pageSize, activePage * pageSize)
+                      .map(item => item.id)
+                  }
+                });
+              }}
+            />
+          </div>
         </div>
-      </div>
+      }
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useEffect, useReducer, useState } from "react";
+/* import React, { FC, useCallback, useEffect, useReducer, useState } from "react";
 import { PageChangeHandler, TableColumn, TableProps } from "./table.types";
 import "./Table.css";
 import TableRow from "./tableRow";
@@ -212,3 +212,4 @@ const Table = <T extends {selected: boolean; id: string;}>({
 };
 
 export default Table;
+ */

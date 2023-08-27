@@ -1,10 +1,12 @@
 import { Dispatch } from "react";
-import { TableRowSetAction, TableToggleSelectedSetAction } from "./Table";
+import { TableRowSetAction, TableToggleSelectedSetAction } from "./TableV2.tsx";
 import { TableConfig } from "./table-utilities";
 
-export type TableProps<T> = {
-	config: TableConfig<T>,
-	getRowId: (row: any) => string;
+export type RowType = Record<string, string | number | boolean> & {id: string;};
+
+export type TableProps = {
+	config: TableConfig,
+	getRowId: (row: RowType) => string;
 	onPageChange: PageChangeHandler;
 	onDeleteSelected: (rowIdsToDelete: string[]) => void;
 };
@@ -16,12 +18,12 @@ export type TableColumn = {
 	transform?: (value: string) => string
 }
 
-export type TableRowProps<T> = {
-	rowData: any;
+export type TableRowProps = {
+	rowData: RowType & {selected: boolean;};
 	columnData: TableColumn[];
-	update: (oldRow: any, newRow: any) => any;
+	update: (oldRow: RowType  & {selected: boolean;}, newRow: RowType & {selected: boolean;}) => RowType & {selected: boolean;};
 	rowDelete: (id: string) => void;
-	tableRowDispatch: Dispatch<TableRowSetAction<T> | TableToggleSelectedSetAction>
+	tableRowDispatch: Dispatch<TableRowSetAction | TableToggleSelectedSetAction>
 };
 
 export type TablePaginationPropsType = {

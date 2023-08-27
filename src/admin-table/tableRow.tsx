@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { TableColumn, TableRowProps } from "./table.types";
-import { TableRowActionType } from "./Table";
+import { TableRowActionType } from "./TableV2.tsx";
 
-function TableRow<T>({rowData, columnData, update, rowDelete, tableRowDispatch}: TableRowProps<T>) {
+function TableRow({rowData, columnData, update, rowDelete, tableRowDispatch}: TableRowProps) {
 
 	const [editMode, setEditMode] = useState<boolean>(false);
 	const [rowValue, setRowValue] = useState(rowData);
@@ -23,11 +23,11 @@ function TableRow<T>({rowData, columnData, update, rowDelete, tableRowDispatch}:
 			<div className="flex flex-row justify-center pl-8 py-3">
 				<input 
 					type='checkbox'
-					checked={rowData.selected ?? false}
+					checked={rowValue.selected ?? false}
 					onChange={() => {
 						tableRowDispatch({
 							type: TableRowActionType.TOGGLE_SELECTED,
-							payload: rowData.id
+							payload: rowValue.id
 						});
 					}}
 				/>
@@ -35,9 +35,11 @@ function TableRow<T>({rowData, columnData, update, rowDelete, tableRowDispatch}:
 
 			{columnData.map(column => {
 
+				const fieldVal = rowValue[column['field']] as string;
+
 				const value = column.transform 
-					? column.transform(rowData[column['field']])
-					: rowData[column['field']];
+					? column.transform(fieldVal)
+					: fieldVal;
 
 				return (
 					<div key={column['field']}

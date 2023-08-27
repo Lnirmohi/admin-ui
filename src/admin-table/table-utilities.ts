@@ -1,22 +1,14 @@
-import { TableColumn, PageChangeHandler } from "./table.types";
+import { TableColumn, PageChangeHandler, RowType } from "./table.types";
 
-export function useTable<T>({
-  rows,
-  columns,
-  pageSize,
-	rowUpdate,
-	rowDelete,
-}: TableConfig<T>): {
-  rows: (T & {
-    selected: boolean;
-  })[],
+export function useTable({ rows, columns, pageSize, rowUpdate, rowDelete}: TableConfig): {
+  rows:RowType[],
   columns: TableColumn[],
   pageSize: number,
-  rowUpdate: (oldRow: any, newRow: any) => void
+  rowUpdate: (oldRow: RowType & {selected: boolean;}, newRow: RowType & {selected: boolean;}) => RowType & {selected: boolean;}
   rowDelete: (rowId: string) => void
 } {
   return {
-    rows: rows.map(item => ({...item, selected: false})),
+    rows: rows,
     columns: columns,
     pageSize: pageSize,
     rowUpdate: rowUpdate,
@@ -24,10 +16,10 @@ export function useTable<T>({
   };
 }
 
-export type TableConfig<T> = {
-  rows: T[],
+export type  TableConfig = {
+  rows: RowType[],
   columns: TableColumn[];
   pageSize: number;
-	rowUpdate: (oldRow: any, newRow: any) => void;
+	rowUpdate: (oldRow: RowType & {selected: boolean;}, newRow: RowType & {selected: boolean;}) => RowType & {selected: boolean;}
 	rowDelete: (rowId: string) => void;
 }
