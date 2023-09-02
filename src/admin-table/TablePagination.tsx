@@ -51,7 +51,7 @@ const TablePagination = ({pageCount, handlePageChange}: TablePaginationPropsType
 	}, [currentPage, pageArr]);
   
 	return (
-		<div className="pagination-container flex flex-row self-center gap-11">
+		<div className="grow justify-center flex flex-row self-center gap-11 pb-4">
 			<div>
 				<PageNumberButton disabled={currentPage === 1}>
 					&lt;&lt;
@@ -78,23 +78,25 @@ const TablePagination = ({pageCount, handlePageChange}: TablePaginationPropsType
 
 			<MorePageSpan pageSelected={currentPage} totalPages={pageCount} position="front"/>
 			
-			<div>
-			{pagesToShow && pagesToShow
-				.filter(page => page !== 1 && page !== pageCount)
-				.map((page, index) => (
-					<PageNumberButton 
-						key={page} 
-						className={page === currentPage ? 'current-page-bg' : ''}
-						onClick={() => {
-							handlePageChange(page);
-							setCurrentPage(page);
-						}}
-					>
-						{page}
-					</PageNumberButton>
-				))
+			{pagesToShow?.length && pageCount > 1 && 
+				<div>
+				{pagesToShow
+					.filter(page => page !== 1 && page !== pageCount)
+					.map((page, index) => (
+						<PageNumberButton 
+							key={page} 
+							className={page === currentPage ? 'current-page-bg' : ''}
+							onClick={() => {
+								handlePageChange(page);
+								setCurrentPage(page);
+							}}
+						>
+							{page}
+						</PageNumberButton>
+					)
+				)}
+				</div>
 			}
-			</div>
 
 			<MorePageSpan pageSelected={currentPage} totalPages={pageCount} position="rear" />
 

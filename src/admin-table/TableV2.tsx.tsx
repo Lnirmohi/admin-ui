@@ -245,12 +245,12 @@ const Table = ({
       
       {pageCount > 0 &&
         <div className="px-4">
-          <div className="bg-white flex flex-col gap-3 px-4 pt-4 rounded-b-lg">
+          <div className="bg-white flex flex-row gap-3 px-4 pt-4 rounded-b-lg">
             <button 
               onClick={handleDeleteSelected}
               className="
-                self-start bg-transparent hover:bg-pink-500 text-pink-600 font-semibold 
-                hover:text-white py-2 px-4 border border-pink-400 hover:border-transparent rounded"
+                bg-transparent hover:bg-pink-500 text-pink-600 font-semibold 
+                hover:text-white py-2 mb-4 px-4 border border-pink-400 hover:border-transparent rounded"
             >
               Delete Selected
             </button>

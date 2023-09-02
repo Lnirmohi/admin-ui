@@ -22,14 +22,14 @@ export default function SearchTable({fields, callback}: {
     : `${fields[0]}`;
   return (
     <div className="flex flex-row gap-4 mt-2 mb-2 justify-end">
-      <div className='flex flex-row gap-2 bg-white px-2 py-2 border-2 border-slate-400 rounded-md'>
+      <div className='flex flex-row gap-2 bg-white rounded-md'>
         <input 
           type="text" 
           name="search" 
           id="search"
           value={value}
           onChange={handleChange}
-          className='outline-transparent'
+          className='outline-2 p-2 rounded-md'
           placeholder={`Search for ${placeHolder}`} 
         />
         <button 
