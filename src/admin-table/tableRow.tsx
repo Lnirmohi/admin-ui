@@ -7,6 +7,7 @@ function TableRow({rowData, columnData, update, rowDelete, tableRowDispatch}: Ta
 	const [editMode, setEditMode] = useState<boolean>(false);
 	const [rowValue, setRowValue] = useState(rowData);
 	const [oldData, setOldData] = useState(rowData);
+	const [selected, setSelected] = useState(false);
 
 	const handleRowValueChange = ({target}: React.ChangeEvent<HTMLInputElement>) => {
 		
@@ -18,18 +19,27 @@ function TableRow({rowData, columnData, update, rowDelete, tableRowDispatch}: Ta
 		}));
 	};
 
+	useEffect(() => {
+		tableRowDispatch({
+			type: TableRowActionType.TOGGLE_SELECTED,
+			payload: {
+				id: rowValue.id,
+				selected 
+			}
+		});
+	}, [selected]);
+
 	return (
-		<div className={`flex flex-row py-2 hover:shadow-inner hover:bg-gray-200 ${rowData.selected ? 'highlighted-row' : undefined}`}>
+		<div className={`flex flex-row py-2 hover:shadow-inner hover:bg-gray-200 ${rowData.selected ? 'bg-slate-100 shadow-inner' : ''}`}>
 			<div className="flex flex-row justify-center pl-8 py-3">
 				<input 
 					type='checkbox'
-					checked={rowValue.selected ?? false}
+					checked={rowData.selected}
 					onChange={() => {
-						tableRowDispatch({
-							type: TableRowActionType.TOGGLE_SELECTED,
-							payload: rowValue.id
-						});
+						setSelected(prev => !prev);
 					}}
+					title="Select"
+					className="cursor-pointer"
 				/>
 			</div>
 

@@ -18,7 +18,10 @@ export type TableRowSetAction = {
 
 export type TableToggleSelectedSetAction = {
   type: TableRowActionType.TOGGLE_SELECTED;
-  payload: string;
+  payload: {
+    id: string;
+    selected: boolean;
+  };
 }
 
 export type TableTogleAllSelectedAction = {
@@ -45,7 +48,7 @@ const tableRowReducer = (state = initialstate, action: TableActionTypes) => {
       break;
     case TableRowActionType.TOGGLE_SELECTED: {
 
-      const selectedToggledRow = state.find(item => item.id === action.payload);
+      const selectedToggledRow = state.find(item => item.id === action.payload.id);
   
       if(selectedToggledRow !== undefined) {
         state = [...state].map(item => {
@@ -53,7 +56,7 @@ const tableRowReducer = (state = initialstate, action: TableActionTypes) => {
           if(item.id === selectedToggledRow.id) {
             return {
               ...selectedToggledRow,
-              selected: !selectedToggledRow.selected
+              selected: action.payload.selected
             };
           }
 
@@ -190,7 +193,7 @@ const Table = ({
             });
           }}
         />
-        <div id="table-head" className="bg-[#F7F8FA] rounded-t-lg shadow-lg">
+        <div id="table-head" className="bg-[#d4e3ff] rounded-t-lg shadow-lg">
           <div className="flex flex-row">
             <div className="pl-8 py-3">
               <input
@@ -199,6 +202,8 @@ const Table = ({
                 onChange={() => {
                   setAllSelected(prev => !prev);
                 }}
+                title="Select All"
+                className="cursor-pointer"
               />
             </div>
             {columns.map((column) => (

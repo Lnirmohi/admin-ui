@@ -8,7 +8,7 @@ export default function SearchTable({fields, callback}: {
   const [value, setValue] = useState('');
   const search = debounce((value: string) => {
     callback(value);
-  }, 500);
+  }, 700);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const {value} = e.target;
@@ -35,10 +35,8 @@ export default function SearchTable({fields, callback}: {
         <button 
           className='hover:text-red-500 hover:cursor-pointer mr-2'
           onClick={() => {
-            if(value.length) {
-              setValue('');
-              search('');
-            }
+            setValue('');
+            search('');
           }}
         >
           Clear
