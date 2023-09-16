@@ -1,13 +1,12 @@
-import { useEffect, useState } from "react";
-import { TableColumn, TableRowProps } from "./table.types";
-import { TableRowActionType } from "./TableV2.tsx";
+import { useState } from "react";
+import { TableRowProps } from "../types/table.types.js";
+import { TableRowActionType } from "../index.js";
 
-function TableRow({rowData, columnData, update, rowDelete, tableRowDispatch}: TableRowProps) {
+export function TableRow({rowData, columnData, update, rowDelete, tableRowDispatch}: TableRowProps) {
 
 	const [editMode, setEditMode] = useState<boolean>(false);
 	const [rowValue, setRowValue] = useState(rowData);
 	const [oldData, setOldData] = useState(rowData);
-	const [selected, setSelected] = useState(false);
 
 	const handleRowValueChange = ({target}: React.ChangeEvent<HTMLInputElement>) => {
 		
@@ -19,24 +18,23 @@ function TableRow({rowData, columnData, update, rowDelete, tableRowDispatch}: Ta
 		}));
 	};
 
-	useEffect(() => {
-		tableRowDispatch({
-			type: TableRowActionType.TOGGLE_SELECTED,
-			payload: {
-				id: rowValue.id,
-				selected 
-			}
-		});
-	}, [selected]);
-
 	return (
 		<div className={`flex flex-row py-2 hover:shadow-inner hover:bg-gray-200 ${rowData.selected ? 'bg-slate-100 shadow-inner' : ''}`}>
 			<div className="flex flex-row justify-center pl-8 py-3">
 				<input 
 					type='checkbox'
 					checked={rowData.selected}
-					onChange={() => {
-						setSelected(prev => !prev);
+					onChange={({target}) => {
+
+						const {checked} = target;
+						
+						tableRowDispatch({
+							type: TableRowActionType.TOGGLE_SELECTED,
+							payload: {
+								id: rowValue.id,
+								selected: checked 
+							}
+						});
 					}}
 					title="Select"
 					className="cursor-pointer"
@@ -129,5 +127,3 @@ function TableRow({rowData, columnData, update, rowDelete, tableRowDispatch}: Ta
 		</div>
 	);
 }
-
-export default TableRow;

@@ -1,5 +1,5 @@
 import { ADMIN_DATA_URL } from "../constants/constants";
-import { TUserData } from "../types/userTypes";
+import { TUserData } from "../dashbaord/types/userTypes";
 
 export const fetchUserData = async (): Promise<TUserData[]> => {
     

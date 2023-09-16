@@ -1,4 +1,4 @@
-import { TableColumn } from "../admin-table/table.types";
+import { TableColumn } from "../../admin-table/types/table.types";
 
 const userDataColumnDefination: TableColumn[] = [
 	{

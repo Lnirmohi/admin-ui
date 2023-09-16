@@ -1,6 +1,6 @@
-import { Dispatch } from "react";
-import { TableRowSetAction, TableToggleSelectedSetAction } from "./TableV2.tsx";
-import { TableConfig } from "./table-utilities";
+import { Dispatch, SetStateAction } from "react";
+import { TableRowSetAction, TableToggleSelectedSetAction } from "../index.js";
+import { TableConfig } from "../utils/table-utilities.js";
 
 export type RowType = Record<string, string | number | boolean> & {id: string;};
 
@@ -23,7 +23,8 @@ export type TableRowProps = {
 	columnData: TableColumn[];
 	update: (oldRow: RowType  & {selected: boolean;}, newRow: RowType & {selected: boolean;}) => RowType & {selected: boolean;};
 	rowDelete: (id: string) => void;
-	tableRowDispatch: Dispatch<TableRowSetAction | TableToggleSelectedSetAction>
+	tableRowDispatch: Dispatch<TableRowSetAction | TableToggleSelectedSetAction>;
+	setAllSelected: Dispatch<SetStateAction<boolean | undefined>>
 };
 
 export type TablePaginationPropsType = {

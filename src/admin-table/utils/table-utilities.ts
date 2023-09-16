@@ -1,4 +1,4 @@
-import { TableColumn, PageChangeHandler, RowType } from "./table.types";
+import { TableColumn, RowType } from "../types/table.types";
 
 export function useTable({ rows, columns, pageSize, rowUpdate, rowDelete}: TableConfig): {
   rows:RowType[],

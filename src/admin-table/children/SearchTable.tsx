@@ -1,7 +1,7 @@
-import React, { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 import { debounce } from 'lodash';
 
-export default function SearchTable({fields, callback}: {
+export function SearchTable({fields, callback}: {
   fields: string[];
   callback: (value: string) => void
 }) {

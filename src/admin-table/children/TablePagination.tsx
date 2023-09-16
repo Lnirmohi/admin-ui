@@ -1,5 +1,5 @@
-import { DetailedHTMLProps, HTMLProps, ReactNode, useEffect, useState } from "react";
-import { TablePaginationPropsType } from "./table.types";
+import { DetailedHTMLProps, ReactNode, useEffect, useState } from "react";
+import { TablePaginationPropsType } from "../types/table.types";
 
 interface PageNumberProps extends DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> {
 	children: ReactNode;
@@ -22,7 +22,7 @@ const PageNumberButton = ({children, className, ...props}: PageNumberProps) => {
 };
 
 
-const TablePagination = ({pageCount, handlePageChange}: TablePaginationPropsType) => {
+export const TablePagination = ({pageCount, handlePageChange}: TablePaginationPropsType) => {
 
 	const [pageArr, setPageArr] = useState<number[]>([1]);
 	const [currentPage, setCurrentPage] = useState(1);
@@ -82,7 +82,7 @@ const TablePagination = ({pageCount, handlePageChange}: TablePaginationPropsType
 				<div>
 				{pagesToShow
 					.filter(page => page !== 1 && page !== pageCount)
-					.map((page, index) => (
+					.map((page) => (
 						<PageNumberButton 
 							key={page} 
 							className={page === currentPage ? 'current-page-bg' : ''}
@@ -128,8 +128,6 @@ const TablePagination = ({pageCount, handlePageChange}: TablePaginationPropsType
 		</div>
 	);
 };
-
-export default TablePagination;
 
 type MorePageSpanProps = {
 	pageSelected: number;

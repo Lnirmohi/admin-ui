@@ -3,11 +3,11 @@ import { isEqual } from 'lodash';
 import { ToastContainer, toast } from 'react-toastify';
 
 /* import Table from '../admin-table/Table'; */
-import { UserDataDispatchContext, UsersDataContext } from '../context/userDataContext';
-import userDataColumnDefination from './userDataTableColumnDefination';
-import { TUserData, UserDataActionTypes } from '../types/userTypes';
-import { useTable } from '../admin-table/table-utilities';
-import TableV2 from '../admin-table/TableV2.tsx';
+import { UserDataDispatchContext, UsersDataContext } from '../types/userDataContext.ts';
+import userDataColumnDefination from './userDataTableColumnDefination.ts';
+import { TUserData, UserDataActionTypes } from '../types/userTypes.ts';
+import { useTable } from '../../admin-table/utils/table-utilities';
+import Table from '../../admin-table/index.ts';
 
 
 const Dashboard = () => {
@@ -78,10 +78,10 @@ const Dashboard = () => {
 	return (
 		<>
 		{userData && userData.length > 0 &&
-			<TableV2
+			<Table
 				config={tableConfig}
 				getRowId={(row) => row?.id}
-				onPageChange={(newPage) => {/*  */}}
+				onPageChange={() => {/*  */}}
 				onDeleteSelected={(rowIdsToDelete) => {
 
 					if(userDataDispatch === undefined) return;

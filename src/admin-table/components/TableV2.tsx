@@ -1,83 +1,13 @@
-import React, { FC, useCallback, useEffect, useReducer, useState } from "react";
-import { PageChangeHandler, RowType, TableColumn, TableProps } from "./table.types";
-import "./Table.css";
-import TableRow from "./tableRow";
-import TablePagination from "./TablePagination";
-import SearchTable from "./SearchTable";
-
-export enum TableRowActionType {
-  SET = 'SET',
-  TOGGLE_SELECTED = 'TOGGLE_SELECTED',
-  TOGGLE_ALL_SELECTED = 'TOGGLE_ALL_SELECTED'
-}
-
-export type TableRowSetAction = {
-  type: TableRowActionType.SET;
-  payload: RowType[];
-}
-
-export type TableToggleSelectedSetAction = {
-  type: TableRowActionType.TOGGLE_SELECTED;
-  payload: {
-    id: string;
-    selected: boolean;
-  };
-}
-
-export type TableTogleAllSelectedAction = {
-  type: TableRowActionType.TOGGLE_ALL_SELECTED,
-  payload: {
-    isAllSelected: boolean;
-    visibleRowIds: string[]
-  };
-};
-
-type TableActionTypes = TableRowSetAction | TableToggleSelectedSetAction | TableTogleAllSelectedAction;
-
-type TableStateType = (RowType & {selected: boolean;})[];
-
-const initialstate: TableStateType = [];
-
-const tableRowReducer = (state = initialstate, action: TableActionTypes) => {
-
-  switch (action.type) {
-
-    case TableRowActionType.SET:
-
-      state = action.payload.map((row) => ({...row, selected: false}));
-      break;
-    case TableRowActionType.TOGGLE_SELECTED: {
-
-      const selectedToggledRow = state.find(item => item.id === action.payload.id);
-  
-      if(selectedToggledRow !== undefined) {
-        state = [...state].map(item => {
-
-          if(item.id === selectedToggledRow.id) {
-            return {
-              ...selectedToggledRow,
-              selected: action.payload.selected
-            };
-          }
-
-          return item;
-        });
-      }
-      break;
-    }
-    case TableRowActionType.TOGGLE_ALL_SELECTED:
-      state = [...state].map(item => (
-        action.payload.visibleRowIds.includes(item.id)
-        ? {...item, selected: action.payload.isAllSelected}
-        : item
-      ));
-      break;
-    default:
-      return state;
-  }
-
-  return state;
-};
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { useEffect, useReducer, useState } from "react";
+import { TableProps } from "../types/table.types";
+import {
+  TableRow,
+  TablePagination,
+  SearchTable,
+  tableRowReducer,
+  TableRowActionType
+} from "../index";
 
 const Table = ({
   config,
@@ -88,9 +18,7 @@ const Table = ({
 
   const [allSelected, setAllSelected] = useState<boolean>();
   const [activePage, setActivePage] = useState<number>(1);
-  const [pageCount, setPageCount] = useState<number>(1);
   const [tableRows, tableRowDispatch] = useReducer<typeof tableRowReducer>(tableRowReducer, []);
-  // const [tableRowsToShow, setTableRowsToShow] = useState<T[]>();
 
   const {
     rows,
@@ -100,9 +28,7 @@ const Table = ({
     rowDelete,
   } = config;
 
-  useEffect(() => {
-    setPageCount(Math.ceil(tableRows.length / pageSize));
-  }, [pageSize, tableRows.length]);
+  const pageCount = Math.ceil(tableRows.length / pageSize);
 
   useEffect(() => {
     if (rows.length === 0) return;
@@ -169,7 +95,7 @@ const Table = ({
               
               let matchFound = false;
               
-              for(const [key, value] of Object.entries(item)) {
+              for(const [, value] of Object.entries(item)) {
                 
                 const convertedValue = `${value}`.toLowerCase();
 
@@ -239,6 +165,7 @@ const Table = ({
                       columnData={columns}
                       key={getRowId(row)}
                       tableRowDispatch={tableRowDispatch}
+                      setAllSelected={setAllSelected}
                     />
                   ))}
               </>
