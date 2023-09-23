@@ -6,7 +6,7 @@ import {
   TablePagination,
   SearchTable,
   tableRowReducer,
-  TableRowActionType
+  TableRowActionType,
 } from "../index";
 
 const Table = ({
@@ -15,34 +15,28 @@ const Table = ({
   onPageChange,
   onDeleteSelected,
 }: TableProps) => {
-
   const [allSelected, setAllSelected] = useState<boolean>();
   const [activePage, setActivePage] = useState<number>(1);
-  const [tableRows, tableRowDispatch] = useReducer<typeof tableRowReducer>(tableRowReducer, []);
+  const [tableRows, tableRowDispatch] = useReducer<typeof tableRowReducer>(
+    tableRowReducer,
+    []
+  );
 
-  const {
-    rows,
-    columns,
-    pageSize,
-    rowUpdate,
-    rowDelete,
-  } = config;
+  const { rows, columns, pageSize, rowUpdate, rowDelete } = config;
 
   const pageCount = Math.ceil(tableRows.length / pageSize);
 
   useEffect(() => {
     if (rows.length === 0) return;
-    
+
     tableRowDispatch({
       type: TableRowActionType.SET,
-      payload: rows
+      payload: rows,
     });
-
   }, [rows]);
 
-
   useEffect(() => {
-    if(allSelected === undefined) return;
+    if (allSelected === undefined) return;
 
     tableRowDispatch({
       type: TableRowActionType.TOGGLE_ALL_SELECTED,
@@ -50,91 +44,111 @@ const Table = ({
         isAllSelected: allSelected,
         visibleRowIds: tableRows
           .slice((activePage - 1) * pageSize, activePage * pageSize)
-          .map(item => item.id)
-      }
+          .map((item) => item.id),
+      },
     });
   }, [allSelected]);
-  
 
   const handleDeleteSelected = () => {
-    
     const selectedRows = tableRows
-      .filter(row =>  row.selected === true)
-      .map(item => item.id);
+      .filter((row) => row.selected === true)
+      .map((item) => item.id);
 
     onDeleteSelected(selectedRows);
 
-    if(allSelected) {
+    if (allSelected) {
       setAllSelected(false);
 
       // handle delete all from last page
-      if(activePage === pageCount) {
-        setActivePage(activePage -1);
+      if (activePage === pageCount) {
+        setActivePage(activePage - 1);
       }
     }
+  };
+
+  const handleSearch = (searchTerm: string) => {
+    if (!allSelected) {
+      setAllSelected(false);
+    }
+
+    if (searchTerm.length === 0) {
+      tableRowDispatch({
+        type: TableRowActionType.SET,
+        payload: rows,
+      });
+
+      return;
+    }
+
+    const convertedSearchTerm = searchTerm.toLowerCase();
+
+    const filteredRows = rows.filter((item) => {
+      let matchFound = false;
+
+      for (const [, value] of Object.entries(item)) {
+        const convertedValue = `${value}`.toLowerCase();
+
+        if (typeof value === "string") {
+          if (convertedValue.includes(convertedSearchTerm)) {
+            matchFound = true;
+          }
+        } else if (typeof value === "number") {
+          if (convertedValue.includes(convertedSearchTerm)) {
+            matchFound = true;
+          }
+        }
+      }
+
+      return matchFound;
+    });
+
+    tableRowDispatch({
+      type: TableRowActionType.SET,
+      payload: filteredRows,
+    });
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setActivePage(newPage);
+    onPageChange(newPage);
+    setAllSelected(false);
+
+    tableRowDispatch({
+      type: TableRowActionType.TOGGLE_ALL_SELECTED,
+      payload: {
+        isAllSelected: false,
+        visibleRowIds:
+          tableRows &&
+          tableRows
+            .slice((activePage - 1) * pageSize, activePage * pageSize)
+            .map((item) => item.id),
+      },
+    });
   };
 
   return (
     <div className="bg-slate-300 min-w-full font-poppins py-6">
       <div className="px-4">
-        <SearchTable 
-          fields={Object.keys(rows[0]).filter(item => item !== 'id')} 
-          callback={(searchTerm) => {
-
-            if(searchTerm.length === 0) {
-              
-              tableRowDispatch({
-                type: TableRowActionType.SET,
-                payload: rows
-              });
-              
-              return;
-            }
-            
-            const convertedSearchTerm = searchTerm.toLowerCase();
-            
-            const filteredRows = rows.filter(item => {
-              
-              
-              let matchFound = false;
-              
-              for(const [, value] of Object.entries(item)) {
-                
-                const convertedValue = `${value}`.toLowerCase();
-
-                if(typeof value === 'string') {
-                  if(convertedValue.includes(convertedSearchTerm)) {
-                    matchFound = true;
-                  }
-                } else if(typeof value === 'number') {
-                  if(convertedValue.includes(convertedSearchTerm)) {
-                    matchFound = true;
-                  }
-                }
-              }
-
-              return matchFound;
-            });
-
-            tableRowDispatch({
-              type: TableRowActionType.SET,
-              payload: filteredRows
-            });
-          }}
+        <SearchTable
+          fields={Object.keys(rows[0]).filter((item) => item !== "id")}
+          callback={(value) => handleSearch(value)}
         />
         <div id="table-head" className="bg-[#d4e3ff] rounded-t-lg shadow-lg">
           <div className="flex flex-row">
+            {/* SELECT ALL INPUT */}
             <div className="pl-8 py-3">
               <input
                 type="checkbox"
                 checked={allSelected ?? false}
                 onChange={() => {
-                  setAllSelected(prev => !prev);
+                  setAllSelected((prev) => !prev);
                 }}
                 title="Select All"
                 className="cursor-pointer"
               />
             </div>
+
+            {/* COLUMNS */}
             {columns.map((column) => (
               <div
                 className="px-2 py-3 text-center ml-2"
@@ -148,40 +162,42 @@ const Table = ({
           </div>
         </div>
 
+        {/* ROWS */}
         <div id="table-body" className="bg-white space-y-2 h-[650px]">
           <>
-          {tableRows.length === 0 ? (
-            <div className="h-full flex flex-col justify-center">
-              <p className="text-center text-3xl text-slate-400">
-                No data found
-              </p>
-            </div>
+            {tableRows.length === 0 ? (
+              <div className="h-full flex flex-col justify-center">
+                <p className="text-center text-3xl text-slate-400">
+                  No data found
+                </p>
+              </div>
             ) : (
               <>
-                {tableRows && tableRows
-                  .slice((activePage - 1) * pageSize, activePage * pageSize)
-                  .map((row) => (
-                    <TableRow
-                      update={rowUpdate}
-                      rowDelete={rowDelete}
-                      rowData={row}
-                      columnData={columns}
-                      key={getRowId(row)}
-                      tableRowDispatch={tableRowDispatch}
-                      setAllSelected={setAllSelected}
-                    />
-                  ))}
+                {tableRows &&
+                  tableRows
+                    .slice((activePage - 1) * pageSize, activePage * pageSize)
+                    .map((row) => (
+                      <TableRow
+                        update={rowUpdate}
+                        rowDelete={rowDelete}
+                        rowData={row}
+                        columnData={columns}
+                        key={getRowId(row)}
+                        tableRowDispatch={tableRowDispatch}
+                        setAllSelected={setAllSelected}
+                      />
+                    ))}
               </>
-            )
-          }
+            )}
           </>
         </div>
       </div>
-      
-      {pageCount > 0 &&
+
+      {/* TABLE FOOTER */}
+      {pageCount > 0 && (
         <div className="px-4">
           <div className="bg-white flex flex-row gap-3 px-4 pt-4 rounded-b-lg">
-            <button 
+            <button
               onClick={handleDeleteSelected}
               className="
                 bg-transparent hover:bg-pink-500 text-pink-600 font-semibold 
@@ -191,25 +207,13 @@ const Table = ({
             </button>
             <TablePagination
               pageCount={pageCount}
-              handlePageChange={(newPage: number) => {
-                setActivePage(newPage);
-                onPageChange(newPage);
-                setAllSelected(false);
-
-                tableRowDispatch({
-                  type: TableRowActionType.TOGGLE_ALL_SELECTED,
-                  payload: {
-                    isAllSelected: false,
-                    visibleRowIds: tableRows && tableRows
-                      .slice((activePage - 1) * pageSize, activePage * pageSize)
-                      .map(item => item.id)
-                  }
-                });
+              handlePageChange={(value) => {
+                handlePageChange(value);
               }}
             />
           </div>
         </div>
-      }
+      )}
     </div>
   );
 };

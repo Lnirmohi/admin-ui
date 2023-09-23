@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, useMemo, useRef } from 'react';
 import { debounce } from 'lodash';
 
 export function SearchTable({fields, callback}: {
@@ -10,13 +10,24 @@ export function SearchTable({fields, callback}: {
 
   const handleChange = ({target: {value}}: ChangeEvent<HTMLInputElement>) => {
     
-    if(value.length === 0) {
+    if(value.length) {
       callback(value);
     }
   };
 
+  const handleClear = () => {
+
+    if(searchRef.current?.value.length === 0) return;
+    
+    callback('');
+
+    if(searchRef.current) {
+      searchRef.current.value = '';
+    }
+  };
+
   const debouncedSearch = useMemo(() => {
-    return debounce(handleChange, 2000);
+    return debounce(handleChange, 1000);
   }, []);
   
   const placeHolder = fields.length > 1 
@@ -37,13 +48,7 @@ export function SearchTable({fields, callback}: {
         />
         <button 
           className='hover:text-red-500 hover:cursor-pointer mr-2'
-          onClick={() => {
-            callback('');
-
-            if(searchRef.current) {
-              searchRef.current.value = '';
-            }
-          }}
+          onClick={handleClear}
         >
           Clear
         </button>
