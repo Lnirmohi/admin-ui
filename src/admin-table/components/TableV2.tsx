@@ -82,10 +82,13 @@ const Table = ({
           callback={(searchTerm) => {
 
             if(searchTerm.length === 0) {
+              
               tableRowDispatch({
                 type: TableRowActionType.SET,
                 payload: rows
               });
+              
+              return;
             }
             
             const convertedSearchTerm = searchTerm.toLowerCase();
