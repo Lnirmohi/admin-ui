@@ -37,10 +37,11 @@ export const tableRowReducer = (state = initialstate, action: TableActionTypes) 
 
   switch (action.type) {
 
-    case TableRowActionType.SET:
+    case TableRowActionType.SET:{
 
       state = action.payload.map((row) => ({...row, selected: false}));
       break;
+    }
     case TableRowActionType.TOGGLE_SELECTED: {
 
       const selectedToggledRow = state.find(item => item.id === action.payload.id);
@@ -60,13 +61,15 @@ export const tableRowReducer = (state = initialstate, action: TableActionTypes) 
       }
       break;
     }
-    case TableRowActionType.TOGGLE_ALL_SELECTED:
+    case TableRowActionType.TOGGLE_ALL_SELECTED: {
+      
       state = [...state].map(item => (
         action.payload.visibleRowIds.includes(item.id)
         ? {...item, selected: action.payload.isAllSelected}
         : item
       ));
       break;
+    }
     default:
       return state;
   }
