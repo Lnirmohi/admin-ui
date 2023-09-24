@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, ReactNode, SetStateAction } from "react";
 import { TableRowSetAction, TableToggleSelectedSetAction } from "../index.js";
 import { TableConfig } from "../utils/table-utilities.js";
 
@@ -23,8 +23,7 @@ export type TableRowProps = {
 	columnData: TableColumn[];
 	update: (oldRow: RowType  & {selected: boolean;}, newRow: RowType & {selected: boolean;}) => RowType & {selected: boolean;};
 	rowDelete: (id: string) => void;
-	tableRowDispatch: Dispatch<TableRowSetAction | TableToggleSelectedSetAction>;
-	setAllSelected: Dispatch<SetStateAction<boolean | undefined>>
+	children: ReactNode;
 };
 
 export type TablePaginationPropsType = {

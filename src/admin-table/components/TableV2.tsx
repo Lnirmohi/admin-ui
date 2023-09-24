@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { TableProps } from "../types/table.types";
 import {
   TableRow,
@@ -15,7 +15,9 @@ const Table = ({
   onPageChange,
   onDeleteSelected,
 }: TableProps) => {
-  const [allSelected, setAllSelected] = useState<boolean>();
+
+  const selectAllRowRef = useRef<HTMLInputElement>(null);
+
   const [activePage, setActivePage] = useState<number>(1);
   const [tableRows, tableRowDispatch] = useReducer<typeof tableRowReducer>(
     tableRowReducer,
@@ -35,20 +37,6 @@ const Table = ({
     });
   }, [rows]);
 
-  useEffect(() => {
-    if (allSelected === undefined) return;
-
-    tableRowDispatch({
-      type: TableRowActionType.TOGGLE_ALL_SELECTED,
-      payload: {
-        isAllSelected: allSelected,
-        visibleRowIds: tableRows
-          .slice((activePage - 1) * pageSize, activePage * pageSize)
-          .map((item) => item.id),
-      },
-    });
-  }, [allSelected]);
-
   const handleDeleteSelected = () => {
     const selectedRows = tableRows
       .filter((row) => row.selected === true)
@@ -56,8 +44,8 @@ const Table = ({
 
     onDeleteSelected(selectedRows);
 
-    if (allSelected) {
-      setAllSelected(false);
+    if (selectAllRowRef.current) {
+      selectAllRowRef.current.checked = false;
 
       // handle delete all from last page
       if (activePage === pageCount) {
@@ -67,8 +55,8 @@ const Table = ({
   };
 
   const handleSearch = (searchTerm: string) => {
-    if (!allSelected) {
-      setAllSelected(false);
+    if(selectAllRowRef.current) {
+      selectAllRowRef.current.checked = false;
     }
 
     if (searchTerm.length === 0) {
@@ -111,7 +99,9 @@ const Table = ({
   const handlePageChange = (newPage: number) => {
     setActivePage(newPage);
     onPageChange(newPage);
-    setAllSelected(false);
+    if(selectAllRowRef.current) {
+      selectAllRowRef.current.checked = false;
+    }
 
     tableRowDispatch({
       type: TableRowActionType.TOGGLE_ALL_SELECTED,
@@ -139,12 +129,26 @@ const Table = ({
             <div className="pl-8 py-3">
               <input
                 type="checkbox"
-                checked={allSelected ?? false}
-                onChange={() => {
-                  setAllSelected((prev) => !prev);
+                checked={selectAllRowRef.current?.checked ?? false}
+                onChange={({target: {checked}}) => {
+
+                  if(selectAllRowRef.current) {
+                    selectAllRowRef.current.checked = checked;
+                  }
+
+                  tableRowDispatch({
+                    type: TableRowActionType.TOGGLE_ALL_SELECTED,
+                    payload: {
+                      isAllSelected: checked,
+                      visibleRowIds: tableRows
+                        .slice((activePage - 1) * pageSize, activePage * pageSize)
+                        .map((item) => item.id),
+                    },
+                  });
                 }}
                 title="Select All"
                 className="cursor-pointer"
+                ref={selectAllRowRef}
               />
             </div>
 
@@ -183,9 +187,32 @@ const Table = ({
                         rowData={row}
                         columnData={columns}
                         key={getRowId(row)}
-                        tableRowDispatch={tableRowDispatch}
-                        setAllSelected={setAllSelected}
-                      />
+                      >
+                        <div className="flex flex-row justify-center pl-8 py-3">
+                          <input 
+                            type='checkbox'
+                            checked={row.selected}
+                            onChange={({target}) => {
+
+                              const {checked} = target;
+
+                              if(selectAllRowRef.current) {
+                                selectAllRowRef.current.checked = false;
+                              }
+                              
+                              tableRowDispatch({
+                                type: TableRowActionType.TOGGLE_SELECTED,
+                                payload: {
+                                  id: row.id,
+                                  selected: checked 
+                                }
+                              });
+                            }}
+                            title="Select"
+                            className="cursor-pointer"
+                          />
+                        </div>
+                      </TableRow>
                     ))}
               </>
             )}

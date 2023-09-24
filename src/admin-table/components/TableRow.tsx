@@ -2,7 +2,7 @@ import { useState } from "react";
 import { TableRowProps } from "../types/table.types.js";
 import { TableRowActionType } from "../index.js";
 
-export function TableRow({rowData, columnData, update, rowDelete, tableRowDispatch}: TableRowProps) {
+export function TableRow({rowData, columnData, update, rowDelete, children}: TableRowProps) {
 
 	const [editMode, setEditMode] = useState<boolean>(false);
 	const [rowValue, setRowValue] = useState(rowData);
@@ -20,26 +20,7 @@ export function TableRow({rowData, columnData, update, rowDelete, tableRowDispat
 
 	return (
 		<div className={`flex flex-row py-2 hover:shadow-inner hover:bg-gray-200 ${rowData.selected ? 'bg-slate-100 shadow-inner' : ''}`}>
-			<div className="flex flex-row justify-center pl-8 py-3">
-				<input 
-					type='checkbox'
-					checked={rowData.selected}
-					onChange={({target}) => {
-
-						const {checked} = target;
-						
-						tableRowDispatch({
-							type: TableRowActionType.TOGGLE_SELECTED,
-							payload: {
-								id: rowValue.id,
-								selected: checked 
-							}
-						});
-					}}
-					title="Select"
-					className="cursor-pointer"
-				/>
-			</div>
+			{children}
 
 			{columnData.map(column => {
 
