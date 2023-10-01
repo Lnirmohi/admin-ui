@@ -1,13 +1,52 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { useEffect, useReducer, useRef, useState } from "react";
-import { TableProps } from "../types/table.types";
+import { ChangeEvent, Dispatch, useEffect, useReducer, useRef, useState } from "react";
+import { RowType, TableProps } from "../types/table.types";
 import {
   TableRow,
   TablePagination,
   SearchTable,
   tableRowReducer,
   TableRowActionType,
+  TableActionTypes,
 } from "../index";
+
+function useSearch(tableRows: (RowType & {selected: boolean;})[], tableRowDispatch: Dispatch<TableActionTypes>) {
+
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+
+    if(tableRows.length === 0) return;
+
+    const filteredRows = tableRows.filter((item) => {
+      let matchFound = false;
+
+      for (const [, value] of Object.entries(item)) {
+        const convertedValue = `${value}`.toLowerCase();
+
+        if (typeof value === "string") {
+          if (convertedValue.includes(searchTerm)) {
+            matchFound = true;
+          }
+        } else if (typeof value === "number") {
+          if (convertedValue.includes(searchTerm)) {
+            matchFound = true;
+          }
+        }
+      }
+
+      return matchFound;
+    });
+
+    tableRowDispatch({
+      type: TableRowActionType.SET,
+      payload: filteredRows,
+    });
+
+  }, [searchTerm]);
+
+  return setSearchTerm;
+}
 
 const Table = ({
   config,
@@ -23,6 +62,7 @@ const Table = ({
     tableRowReducer,
     []
   );
+  const setSearchTerm = useSearch(tableRows, tableRowDispatch);
 
   const { rows, columns, pageSize, rowUpdate, rowDelete } = config;
 
@@ -60,6 +100,9 @@ const Table = ({
     }
 
     if (searchTerm.length === 0) {
+
+      setSearchTerm(searchTerm);
+      
       tableRowDispatch({
         type: TableRowActionType.SET,
         payload: rows,
@@ -70,29 +113,9 @@ const Table = ({
 
     const convertedSearchTerm = searchTerm.toLowerCase();
 
-    const filteredRows = rows.filter((item) => {
-      let matchFound = false;
+    setSearchTerm(prev => {
 
-      for (const [, value] of Object.entries(item)) {
-        const convertedValue = `${value}`.toLowerCase();
-
-        if (typeof value === "string") {
-          if (convertedValue.includes(convertedSearchTerm)) {
-            matchFound = true;
-          }
-        } else if (typeof value === "number") {
-          if (convertedValue.includes(convertedSearchTerm)) {
-            matchFound = true;
-          }
-        }
-      }
-
-      return matchFound;
-    });
-
-    tableRowDispatch({
-      type: TableRowActionType.SET,
-      payload: filteredRows,
+      return convertedSearchTerm;
     });
   };
 
@@ -116,6 +139,23 @@ const Table = ({
     });
   };
 
+  const handleSelectAllToggle = ({target: {checked}}: ChangeEvent<HTMLInputElement>) => {
+
+    if(selectAllRowRef.current) {
+      selectAllRowRef.current.checked = checked;
+    }
+
+    tableRowDispatch({
+      type: TableRowActionType.TOGGLE_ALL_SELECTED,
+      payload: {
+        isAllSelected: checked,
+        visibleRowIds: tableRows
+          .slice((activePage - 1) * pageSize, activePage * pageSize)
+          .map((item) => item.id),
+      },
+    });
+  };
+
   return (
     <div className="bg-slate-300 min-w-full font-poppins py-6">
       <div className="px-4">
@@ -130,22 +170,7 @@ const Table = ({
               <input
                 type="checkbox"
                 checked={selectAllRowRef.current?.checked ?? false}
-                onChange={({target: {checked}}) => {
-
-                  if(selectAllRowRef.current) {
-                    selectAllRowRef.current.checked = checked;
-                  }
-
-                  tableRowDispatch({
-                    type: TableRowActionType.TOGGLE_ALL_SELECTED,
-                    payload: {
-                      isAllSelected: checked,
-                      visibleRowIds: tableRows
-                        .slice((activePage - 1) * pageSize, activePage * pageSize)
-                        .map((item) => item.id),
-                    },
-                  });
-                }}
+                onChange={handleSelectAllToggle}
                 title="Select All"
                 className="cursor-pointer"
                 ref={selectAllRowRef}

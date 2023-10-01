@@ -2,7 +2,6 @@ import {useContext} from 'react';
 import { isEqual } from 'lodash';
 import { ToastContainer, toast } from 'react-toastify';
 
-/* import Table from '../admin-table/Table'; */
 import { UserDataDispatchContext, UsersDataContext } from '../types/userDataContext.ts';
 import userDataColumnDefination from './userDataTableColumnDefination.ts';
 import { TUserData, UserDataActionTypes } from '../types/userTypes.ts';
@@ -77,7 +76,6 @@ const Dashboard = () => {
 
 	return (
 		<>
-		{userData && userData.length > 0 &&
 			<Table
 				config={tableConfig}
 				getRowId={(row) => row?.id}
@@ -93,7 +91,7 @@ const Dashboard = () => {
 					});
 				}}
 			/>
-		}
+		
 			<ToastContainer 
 				position='top-right'
 				autoClose={3000}

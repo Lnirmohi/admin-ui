@@ -27,7 +27,7 @@ export type TableTogleAllSelectedAction = {
   };
 };
 
-type TableActionTypes = TableRowSetAction | TableToggleSelectedSetAction | TableTogleAllSelectedAction;
+export type TableActionTypes = TableRowSetAction | TableToggleSelectedSetAction | TableTogleAllSelectedAction;
 
 type TableStateType = (RowType & {selected: boolean;})[];
 

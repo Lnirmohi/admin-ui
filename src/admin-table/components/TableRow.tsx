@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { TableRowProps } from "../types/table.types.js";
-import { TableRowActionType } from "../index.js";
 
 export function TableRow({rowData, columnData, update, rowDelete, children}: TableRowProps) {
 
