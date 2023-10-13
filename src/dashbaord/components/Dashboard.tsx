@@ -83,7 +83,6 @@ const Dashboard = () => {
 				onDeleteSelected={(rowIdsToDelete) => {
 
 					if(userDataDispatch === undefined) return;
-					console.log(rowIdsToDelete);
 
 					userDataDispatch({
 						type: UserDataActionTypes.DELETE,
