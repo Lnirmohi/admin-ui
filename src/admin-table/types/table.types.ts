@@ -1,5 +1,4 @@
-import { Dispatch, ReactNode, SetStateAction } from "react";
-import { TableRowSetAction, TableToggleSelectedSetAction } from "../index.js";
+import { ReactNode } from "react";
 import { TableConfig } from "../utils/table-utilities.js";
 
 export type RowType = Record<string, string | number | boolean> & {id: string;};
