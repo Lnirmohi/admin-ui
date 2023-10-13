@@ -10,7 +10,10 @@ import {
   TableActionTypes,
 } from "../index";
 
-function useSearch(tableRows: (RowType & {selected: boolean;})[], tableRowDispatch: Dispatch<TableActionTypes>) {
+function useSearch(
+  tableRows: (RowType & {selected: boolean;})[], 
+  tableRowDispatch: Dispatch<TableActionTypes>
+) {
 
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -113,10 +116,7 @@ const Table = ({
 
     const convertedSearchTerm = searchTerm.toLowerCase();
 
-    setSearchTerm(prev => {
-
-      return convertedSearchTerm;
-    });
+    setSearchTerm(convertedSearchTerm);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -156,11 +156,26 @@ const Table = ({
     });
   };
 
+  const fields = rows.length 
+    ? Object.keys(rows[0]).filter((item) => item !== "id")
+    : [];
+
+  const placeHolder = fields.length > 1 
+    ? `${fields.slice(0, -1).join(", ")} or ${fields.slice(-1)}`
+    : fields.length === 1
+    ? `${fields[0]}`
+    : 'Table is empty';
+
+  useEffect(() => {
+    console.log(tableRows);
+  }, [tableRows]);
+
+
   return (
     <div className="bg-slate-300 min-w-full font-poppins py-6">
       <div className="px-4">
         <SearchTable
-          fields={Object.keys(rows[0]).filter((item) => item !== "id")}
+          placeHolder={placeHolder}
           callback={(value) => handleSearch(value)}
         />
         <div id="table-head" className="bg-[#d4e3ff] rounded-t-lg shadow-lg">
