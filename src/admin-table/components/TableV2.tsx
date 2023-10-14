@@ -1,27 +1,33 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ChangeEvent, Dispatch, useEffect, useReducer, useRef, useState } from "react";
+import {
+  ChangeEvent,
+  Dispatch,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 import { RowType, TableProps } from "../types/table.types";
 import {
   TableRow,
   TablePagination,
-  SearchTable,
   tableRowReducer,
   TableRowActionType,
   TableActionTypes,
 } from "../index";
+import { SearchTableV2 } from "../children/SearchTableV2";
+import SearchUI from "../children/SearchUI";
 
 function useSearch(
-  tableRows: (RowType & {selected: boolean;})[], 
+  rows: RowType[],
   tableRowDispatch: Dispatch<TableActionTypes>
 ) {
-
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
+    if (rows.length === 0) return;
 
-    if(tableRows.length === 0) return;
-
-    const filteredRows = tableRows.filter((item) => {
+    const filteredRows = rows.filter((item) => {
       let matchFound = false;
 
       for (const [, value] of Object.entries(item)) {
@@ -45,7 +51,6 @@ function useSearch(
       type: TableRowActionType.SET,
       payload: filteredRows,
     });
-
   }, [searchTerm]);
 
   return setSearchTerm;
@@ -57,7 +62,6 @@ const Table = ({
   onPageChange,
   onDeleteSelected,
 }: TableProps) => {
-
   const selectAllRowRef = useRef<HTMLInputElement>(null);
 
   const [activePage, setActivePage] = useState<number>(1);
@@ -65,9 +69,10 @@ const Table = ({
     tableRowReducer,
     []
   );
-  const setSearchTerm = useSearch(tableRows, tableRowDispatch);
 
   const { rows, columns, pageSize, rowUpdate, rowDelete } = config;
+  const setSearchTerm = useSearch(rows, tableRowDispatch);
+
 
   const pageCount = Math.ceil(tableRows.length / pageSize);
 
@@ -97,32 +102,10 @@ const Table = ({
     }
   };
 
-  const handleSearch = (searchTerm: string) => {
-    if(selectAllRowRef.current) {
-      selectAllRowRef.current.checked = false;
-    }
-
-    if (searchTerm.length === 0) {
-
-      setSearchTerm(searchTerm);
-      
-      tableRowDispatch({
-        type: TableRowActionType.SET,
-        payload: rows,
-      });
-
-      return;
-    }
-
-    const convertedSearchTerm = searchTerm.toLowerCase();
-
-    setSearchTerm(convertedSearchTerm);
-  };
-
   const handlePageChange = (newPage: number) => {
     setActivePage(newPage);
     onPageChange(newPage);
-    if(selectAllRowRef.current) {
+    if (selectAllRowRef.current) {
       selectAllRowRef.current.checked = false;
     }
 
@@ -139,9 +122,10 @@ const Table = ({
     });
   };
 
-  const handleSelectAllToggle = ({target: {checked}}: ChangeEvent<HTMLInputElement>) => {
-
-    if(selectAllRowRef.current) {
+  const handleSelectAllToggle = ({
+    target: { checked },
+  }: ChangeEvent<HTMLInputElement>) => {
+    if (selectAllRowRef.current) {
       selectAllRowRef.current.checked = checked;
     }
 
@@ -156,28 +140,62 @@ const Table = ({
     });
   };
 
-  const fields = rows.length 
+  const fields = rows.length
     ? Object.keys(rows[0]).filter((item) => item !== "id")
     : [];
 
-  const placeHolder = fields.length > 1 
-    ? `${fields.slice(0, -1).join(", ")} or ${fields.slice(-1)}`
-    : fields.length === 1
-    ? `${fields[0]}`
-    : 'Table is empty';
+  const placeHolder =
+    fields.length > 1
+      ? `${fields.slice(0, -1).join(", ")} or ${fields.slice(-1)}`
+      : fields.length === 1
+      ? `${fields[0]}`
+      : "Table is empty";
 
   useEffect(() => {
     console.log(tableRows);
   }, [tableRows]);
 
+  const handleSearch = (searchTerm: string) => {
+    
+    // uncheck select all when searched
+    if (selectAllRowRef.current) {
+      selectAllRowRef.current.checked = false;
+    }
+
+    if (searchTerm.length === 0) {
+      
+      setSearchTerm(searchTerm);
+
+      tableRowDispatch({
+        type: TableRowActionType.SET,
+        payload: rows,
+      });
+
+      return;
+    }
+
+    const convertedSearchTerm = searchTerm.toLowerCase();
+
+    setSearchTerm(convertedSearchTerm);
+  };
 
   return (
     <div className="bg-slate-300 min-w-full font-poppins py-6">
       <div className="px-4">
-        <SearchTable
-          placeHolder={placeHolder}
-          callback={(value) => handleSearch(value)}
-        />
+
+        <SearchTableV2 callback={(value) => handleSearch(value)}>
+          {(handleSearch, searchRef, handleClear) => {
+            return (
+              <SearchUI
+                handleSearch={handleSearch}
+                placeHolder={placeHolder}
+                searchRef={searchRef}
+                handleClear={handleClear}
+              />
+            );
+          }}
+        </SearchTableV2>
+
         <div id="table-head" className="bg-[#d4e3ff] rounded-t-lg shadow-lg">
           <div className="flex flex-row">
             {/* SELECT ALL INPUT */}
@@ -189,6 +207,7 @@ const Table = ({
                 title="Select All"
                 className="cursor-pointer"
                 ref={selectAllRowRef}
+                disabled={tableRows.length === 0}
               />
             </div>
 
@@ -229,23 +248,22 @@ const Table = ({
                         key={getRowId(row)}
                       >
                         <div className="flex flex-row justify-center pl-8 py-3">
-                          <input 
-                            type='checkbox'
+                          <input
+                            type="checkbox"
                             checked={row.selected}
-                            onChange={({target}) => {
+                            onChange={({ target }) => {
+                              const { checked } = target;
 
-                              const {checked} = target;
-
-                              if(selectAllRowRef.current) {
+                              if (selectAllRowRef.current) {
                                 selectAllRowRef.current.checked = false;
                               }
-                              
+
                               tableRowDispatch({
                                 type: TableRowActionType.TOGGLE_SELECTED,
                                 payload: {
                                   id: row.id,
-                                  selected: checked 
-                                }
+                                  selected: checked,
+                                },
                               });
                             }}
                             title="Select"
@@ -253,7 +271,8 @@ const Table = ({
                           />
                         </div>
                       </TableRow>
-                    ))}
+                    ))
+                }
               </>
             )}
           </>
